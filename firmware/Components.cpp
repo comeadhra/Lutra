@@ -1,4 +1,4 @@
-#include "Components.h"
+#include "COmponents.h"
 
 using namespace platypus;
 
@@ -61,7 +61,7 @@ void HobbyKingBoat::arm()
 void Seaking::arm()
 {
   disable();
-  delay(500);
+  delay(1000);
 
   velocity(1.0);
   enable();
@@ -455,4 +455,28 @@ uint32_t Winch::encoder(bool *valid)
   uint32_t enc1 = roboclaw_.ReadEncM1(addr, NULL, valid);
   return enc1;
 }
+
+//Cosntruct RC "sensor" by calling RC_Controller
+RC::RC(int channel)
+: Sensor(channel),
+  RC_Controller(board::SENSOR[channel].GPIO[board::RX_NEG], 
+                board::SENSOR[channel].GPIO[board::TX_NEG],
+                board::SENSOR[channel].GPIO[board::RX_POS])
+{
+    // Disable RSxxx receiver
+  pinMode(board::SENSOR[channel].RX_DISABLE, OUTPUT);
+  digitalWrite(board::SENSOR[channel].RX_DISABLE, HIGH);
+
+  // Disable TSxxx transmitter
+  pinMode(board::SENSOR[channel].TX_ENABLE, OUTPUT);
+  digitalWrite(board::SENSOR[channel].TX_ENABLE, LOW);
+
+  
+}
+
+char * RC::name()
+{
+    return "RC_Controller";
+}
+
 
