@@ -61,8 +61,10 @@ void HobbyKingBoat::arm()
 void Seaking::arm()
 {
   disable();
-  delay(1000);
-
+  delay(500);
+  disable();
+  delay(500);
+  
   velocity(1.0);
   enable();
   delay(3000);

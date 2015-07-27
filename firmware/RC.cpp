@@ -132,6 +132,11 @@ bool  RC_Controller::isCalibrateEnabled() {
   else
     return false;
 }
+
+bool RC_Controller::isMotorUpdateBlocked() { return motorUpdateBlocked; }
+
+void RC_Controller::setMotorUpdateBlocked(bool state) { motorUpdateBlocked = state; }
+
 //Velocity mixers
 //Implemented as simple linear mixers. Turn speed is controlled by
 //the position of the throttle stick. Turning angle is linearly proportional

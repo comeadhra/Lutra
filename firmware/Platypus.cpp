@@ -149,7 +149,7 @@ int Led::B()
 
 Motor::Motor(int channel)
   : enable_(board::MOTOR[channel].ENABLE), enabled_(false), velocity_(0)
-{'
+{
   channel_ = channel;
   servo_.attach(board::MOTOR[channel_].SERVO);
   pinMode(enable_, OUTPUT);

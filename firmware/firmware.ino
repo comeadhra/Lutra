@@ -58,19 +58,31 @@ platypus::Led rgb_led;
 
 void enabledListener()
 {
-  pRC->update();
-  if(pRC != NULL && pRC->isOverrideEnabled())
+  
+  if(pRC != NULL)
   {
-    if(pRC->isCalibrateEnabled())
+    pRC->update();
+  
+    if(pRC->isOverrideEnabled())
     {
-      platypus::motors[0]->arm();
-      platypus::motors[1]->arm();
+      if(pRC->isCalibrateEnabled())
+      {
+        //Wait until motor update loop has been blocked to prevent
+        //errors in motor arming
+        while(!pRC->isMotorUpdateBlocked());
+        platypus::motors[0]->arm();
+        platypus::motors[1]->arm();
+      }
+      if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
+      if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
+
+      Serial.print(pRC->leftVelocity());
+      Serial.print(" , ");
+      Serial.println(pRC->rightVelocity());
+      delay(200);
+      platypus::motors[0]->velocity(pRC->leftVelocity());
+      platypus::motors[1]->velocity(pRC->rightVelocity());
     }
-    if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
-    if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
-   
-    platypus::motors[0]->velocity(pRC->leftVelocity());
-    platypus::motors[1]->velocity(pRC->rightVelocity());
   }
   yield();
 }
@@ -431,8 +443,15 @@ void loop()
 void motorUpdateLoop()
 {
   //Break loop is RC is set to override control
-  if(pRC->isOverrideEnabled()){ yield(); return;}
-   
+  if(pRC != NULL)
+  {
+    while(pRC->isOverrideEnabled())
+    { 
+      pRC->setMotorUpdateBlocked(true); 
+      yield();
+    }
+    pRC->setMotorUpdateBlocked(false);
+  }
   // Wait for a fixed time period.
   delay(100);
   

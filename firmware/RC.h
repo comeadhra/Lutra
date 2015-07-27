@@ -31,10 +31,13 @@ class RC_Controller{
     void setMinThrottle(int mt);
     void setAuxLow(int al);
     void setAuxHigh(int ah);
+    void setMotorUpdateBlocked(bool state);
 
     bool  isCalibrateEnabled();
     bool  isOverrideEnabled();
     bool  isArmed();
+    bool isMotorUpdateBlocked();
+    
     float throttleVal();
     float rudderVal();
     float rightVelocity();
@@ -57,6 +60,7 @@ class RC_Controller{
     bool  calibrate = false;
     bool  overrideEnabled = false;
     bool  armed = false;
+    bool  motorUpdateBlocked = false;
     float throttle_val = 0;
     float rudder_val = 0;
     int   aux_val;
