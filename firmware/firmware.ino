@@ -304,6 +304,9 @@ void handleCommand(const char *buffer)
 
 void setup() 
 {
+
+  rgb_led.set(0,1,1);
+  delay(2000);
   // Latch power shutdown line high to keep board from turning off.
   pinMode(board::PWR_KILL, OUTPUT);
   digitalWrite(board::PWR_KILL, HIGH);
