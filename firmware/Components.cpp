@@ -141,13 +141,11 @@ ServoSensor::ServoSensor(int channel)
   : Sensor(channel), position_(0.0)
 {
   servo_.attach(board::SENSOR[channel].GPIO[board::TX_NEG]);
-  servo_legacy_.attach(board::SENSOR[channel].GPIO[board::RX_POS]);
 }
 
 ServoSensor::~ServoSensor()
 {
   servo_.detach(); 
-  servo_legacy_.detach();
 }
 
 void ServoSensor::position(float position)
@@ -162,7 +160,6 @@ void ServoSensor::position(float position)
 
   float command = (position_ * 600) + 1500;
   servo_.writeMicroseconds(command);
-  servo_legacy_.writeMicroseconds(command);
 }
 
 float ServoSensor::position()
