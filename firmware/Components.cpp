@@ -1,4 +1,4 @@
-#include "COmponents.h"
+#include "Components.h"
 
 using namespace platypus;
 
@@ -64,7 +64,7 @@ void Seaking::arm()
   delay(500);
   disable();
   delay(500);
-  
+
   velocity(1.0);
   enable();
   delay(3000);
@@ -77,7 +77,7 @@ void Swordfish::arm()
 {
   disable();
   delay(500);
-  
+
   velocity(1.0);
   enable();
   delay(5000);
@@ -145,7 +145,7 @@ ServoSensor::ServoSensor(int channel)
 
 ServoSensor::~ServoSensor()
 {
-  servo_.detach(); 
+  servo_.detach();
 }
 
 void ServoSensor::position(float position)
@@ -217,14 +217,14 @@ void ES2::loop()
   // Enable +12V output.
   pinMode(board::SENSOR[channel_].PWR_ENABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel_].PWR_ENABLE, HIGH);
-  
+
   // Read response from sensor.
   delay(250);
-  
+
   // Turn off +12V output.
   pinMode(board::SENSOR[channel_].PWR_ENABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel_].PWR_ENABLE, LOW);
-  
+
   // Wait a while for next sensor reading.
   delay(1750);
 }
@@ -233,18 +233,18 @@ void ES2::onSerial()
 {
   // TODO: verify checksum.
   char c = SERIAL_PORTS[channel_]->read();
-  if (c == '\0') { 
+  if (c == '\0') {
     return;
-  } 
+  }
   else if (c != '\r' && c != '\n' && recv_index_ < DEFAULT_BUFFER_SIZE)
   {
     recv_buffer_[recv_index_] = c;
     ++recv_index_;
   }
   else if (recv_index_ > 0)
-  { 
+  {
     recv_buffer_[recv_index_] = '\0';
-    
+
     if (recv_index_ > 6) // Only send data strings
     {
       char output_str[DEFAULT_BUFFER_SIZE+3];
@@ -271,7 +271,7 @@ AtlasSensor::AtlasSensor(int channel)
 {
   // Start up serial port.
   SERIAL_PORTS[channel]->begin(38400);
-  
+
   // Tell the sensor to output continuously.
   SERIAL_PORTS[channel_]->print("C\r");
 }
@@ -290,9 +290,9 @@ void AtlasSensor::onSerial()
     ++recv_index_;
   }
   else if (recv_index_ > 0)
-  { 
+  {
     recv_buffer_[recv_index_] = '\0';
-    
+
     char output_str[DEFAULT_BUFFER_SIZE+3];
     snprintf(output_str, DEFAULT_BUFFER_SIZE,
       "{"
@@ -303,10 +303,10 @@ void AtlasSensor::onSerial()
       "}",
       channel_,
       recv_buffer_
-    );  
+    );
     send(output_str);
 
-    memset(recv_buffer_, 0, recv_index_);   
+    memset(recv_buffer_, 0, recv_index_);
     recv_index_ = 0;
   }
 }
@@ -333,7 +333,7 @@ Hds5::Hds5(int channel)
   // Select RS485 (deselect RS232)
   pinMode(board::SENSOR[channel].RS485_232, OUTPUT);
   digitalWrite(board::SENSOR[channel].RS485_232, HIGH);
-  
+
   // Start up serial port
   SERIAL_PORTS[channel]->begin(4800);
 }
@@ -352,9 +352,9 @@ void Hds5::onSerial()
     ++recv_index_;
   }
   else if (recv_index_ > 0)
-  { 
+  {
     recv_buffer_[recv_index_] = '\0';
-    
+
     char output_str[DEFAULT_BUFFER_SIZE+3];
     snprintf(output_str, DEFAULT_BUFFER_SIZE,
       "{"
@@ -365,9 +365,9 @@ void Hds5::onSerial()
       "}",
       channel_,
       recv_buffer_
-    );  
+    );
     send(output_str);
-    
+
     memset(recv_buffer_, 0, recv_index_);
     recv_index_ = 0;
   }
@@ -380,14 +380,14 @@ Winch::Winch(int channel, uint8_t address)
 , desired_position_(0)
 , desired_velocity_(0)
 , desired_acceleration_(12000)
-{  
+{
   // Enable +12V output.
   pinMode(board::SENSOR[channel].PWR_ENABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel].PWR_ENABLE, HIGH);
-  
+
   // TODO: specifically enable e-stop line.
   // (Right now it is just pulled up by default.)
-  
+
   // Start up Roboclaw.
   roboclaw_.begin(38400);
 }
@@ -403,20 +403,20 @@ bool Winch::set(char* param, char* value)
   if (!strncmp("p", param, 2))
   {
     uint32_t pos = atol(value);
-    
+
     position(pos);
     return true;
   }
   else if (!strncmp("v", param, 2))
   {
     int32_t vel = atol(value);
-    
+
     velocity(vel);
-    return true;    
+    return true;
   }
   else if (!strncmp("reset", param, 6))
   {
-    
+
     reset();
     return true;
   }
@@ -443,10 +443,10 @@ void Winch::velocity(int32_t vel)
 {
   desired_velocity_ = vel;
   roboclaw_.SetM1VelocityPID(addr, Kd, Kp, Ki, Qpps);
-  roboclaw_.SpeedAccelDistanceM1(addr, 
-                                 desired_acceleration_, 
+  roboclaw_.SpeedAccelDistanceM1(addr,
+                                 desired_acceleration_,
                                  desired_velocity_,
-                                 desired_position_);     
+                                 desired_position_);
 }
 
 uint32_t Winch::encoder(bool *valid)
@@ -458,7 +458,7 @@ uint32_t Winch::encoder(bool *valid)
 //Cosntruct RC "sensor" by calling RC_Controller
 RC::RC(int channel)
 : Sensor(channel),
-  RC_Controller(board::SENSOR[channel].GPIO[board::RX_NEG], 
+  RC_Controller(board::SENSOR[channel].GPIO[board::RX_NEG],
                 board::SENSOR[channel].GPIO[board::TX_NEG],
                 board::SENSOR[channel].GPIO[board::RX_POS])
 {
@@ -470,7 +470,7 @@ RC::RC(int channel)
   pinMode(board::SENSOR[channel].TX_ENABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel].TX_ENABLE, LOW);
 
-  
+
 }
 
 char * RC::name()
