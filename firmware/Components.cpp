@@ -86,6 +86,18 @@ void Swordfish::arm()
   delay(3000);
 }
 
+//Default Dynamite arming routine
+//Sets 1500 to neutral (0 velocity) and 2000 to high (1.0 velocity)
+void Dynamite::arm()
+{
+    disable();
+    delay(500);
+
+    velocity(0.0);
+    enable();
+    delay(2000);
+}
+
 AnalogSensor::AnalogSensor(int channel)
   : Sensor(channel), scale_(1.0f), offset_(0.0f) {}
 

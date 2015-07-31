@@ -37,6 +37,13 @@ namespace platypus
     void arm();
   };
 
+  class Dynamite : public Motor 
+  {
+  public:
+    Dynamite(int channel) : Motor(channel) {}
+    void arm();
+  };
+  
   class AnalogSensor : public Sensor 
   {
   public:
