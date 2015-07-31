@@ -170,6 +170,10 @@ void Motor::velocity(float velocity)
   if (velocity < -1.0) {
     velocity = -1.0;
   }
+  
+  //Clip velocity to prevent high current cut-out
+  velocity *= 0.6;
+  
   velocity_ = velocity;
 
   float command = (velocity * 500) + 1500;
