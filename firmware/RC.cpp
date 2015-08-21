@@ -170,6 +170,20 @@ float RC_Controller::leftVelocity()
   }
 }
 
+float RC_Controller::rightFan()
+{
+ 
+   // return 90.0 + rudder_val*30.0;
+   return rudder_val;
+}
+
+
+float RC_Controller::leftFan()
+{
+  return rudder_val;
+   // return 90.0 + rudder_val*30.0;
+  
+}
 //RC Update loop
 //Reads channel inputs if available
 //Sets Override flag and arming + calibration routine
@@ -214,6 +228,7 @@ void RC_Controller::update()
          attachInterrupt(THROTTLE_PIN, throttleInterrupt, CHANGE);
         }
         overrideEnabled = true;
+        
         //Zero throttle and rudder values to prevent false readings
         throttle_val = 0;
         rudder_val = 0;

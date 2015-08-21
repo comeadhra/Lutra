@@ -65,24 +65,49 @@ void enabledListener()
   
     if(pRC->isOverrideEnabled())
     {
+      rgb_led.set(1, 1, 0);
       if(pRC->isCalibrateEnabled())
       {
         //Wait until motor update loop has been blocked to prevent
         //errors in motor arming
-        while(!pRC->isMotorUpdateBlocked());
+        while(!pRC->isMotorUpdateBlocked())
+          rgb_led.set(1,0,1);
         platypus::motors[0]->arm();
         platypus::motors[1]->arm();
       }
       if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
       if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
 
-      Serial.print(pRC->leftVelocity());
-      Serial.print(" , ");
-      Serial.println(pRC->rightVelocity());
-      delay(200);
+      static long timer = millis();
+      static platypus::ServoSensor * lServo = (platypus::ServoSensor *) platypus::sensors[0];
+      static platypus::ServoSensor * rServo = (platypus::ServoSensor *) platypus::sensors[1];
+      /*if (millis() - timer > 200)
+      { 
+        pRC->update();
+        Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
+        Serial.print(pRC->throttleVal());
+        Serial.print(" ");
+        Serial.print(pRC->rudderVal());
+        Serial.print(" ");
+        Serial.print(lServo->position());
+        Serial.print(" ");
+        Serial.println(rServo->position());
+        //static float val = -1;
+        timer = millis();
+      }
+
+     // Serial.print(pRC->leftVelocity());
+      //Serial.print(" , ");
+      //Serial.println(pRC->rightVelocity());
+      delay(200);*/
       platypus::motors[0]->velocity(pRC->leftVelocity());
       platypus::motors[1]->velocity(pRC->rightVelocity());
-    }
+  /*    platypus::motors[0]->velocity(pRC->throttleVal());
+      platypus::motors[1]->velocity(pRC->throttleVal());
+      
+      lServo->position( pRC->throttleVal() < 0.05 ? 0 : pRC->leftFan() );
+      rServo->position( pRC->throttleVal() < 0.05 ? 0 : pRC->rightFan() );
+    */}
   }
   yield();
 }
@@ -320,15 +345,11 @@ void setup()
   // TODO: replace this with smart hooks.
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
-  platypus::sensors[1] = new platypus::RC(1);
-  platypus::sensors[2] = new platypus::Winch(2,0x80);
+  platypus::sensors[1] = new platypus::ServoSensor(1);
+  platypus::sensors[2] = new platypus::RC(2);
   platypus::sensors[3] = new platypus::ES2(3);
    
-  //Store RC controller 
-  
-   pRC = (platypus::RC*)platypus::sensors[1];
-   Scheduler.startLoop(enabledListener);  
-   
+
   
   // Initialize motors
   platypus::motors[0] = new platypus::Dynamite(0);
@@ -341,7 +362,7 @@ void setup()
   
   // Create secondary tasks for system.
   Scheduler.startLoop(motorUpdateLoop);
-  Scheduler.startLoop(serialConsoleLoop);
+ // Scheduler.startLoop(serialConsoleLoop);
 
   // Initialize Platypus library.
   platypus::init();
@@ -357,6 +378,11 @@ void setup()
   // Turn LED off
   // TODO: Investigate how this gets turned on in the first place
   rgb_led.set(0, 0, 0);
+    //Store RC controller 
+  
+   pRC = (platypus::RC*)platypus::sensors[2];
+   Scheduler.startLoop(enabledListener);  
+   
   delay(1000);
  
 }
@@ -435,9 +461,11 @@ void loop()
   // Copy incoming message to debug console.
   Serial.print("<- ");
   Serial.println(input_buffer);
-    
+  
   // Attempt to parse command
   handleCommand(input_buffer);
+ yield();
+  
 }
 
 /**

@@ -69,6 +69,7 @@ namespace platypus
     Servo servo_;
     int channel_;
     int enable_;
+    int servo_ctrl;
     bool enabled_;
     float velocity_;
     

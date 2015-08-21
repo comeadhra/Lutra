@@ -148,18 +148,24 @@ int Led::B()
 }
 
 Motor::Motor(int channel)
-  : enable_(board::MOTOR[channel].ENABLE), enabled_(false), velocity_(0)
+  : enable_(board::MOTOR[channel].ENABLE), servo_ctrl(board::MOTOR[channel].SERVO_CTRL), enabled_(false), velocity_(0)
 {
   channel_ = channel;
   servo_.attach(board::MOTOR[channel_].SERVO);
   pinMode(enable_, OUTPUT);
   digitalWrite(enable_, LOW);
+  pinMode(servo_ctrl, OUTPUT);
+  digitalWrite(servo_ctrl, HIGH);
+  
 }
 
 Motor::~Motor()
 {
   pinMode(enable_, INPUT);
   digitalWrite(enable_, LOW);
+  pinMode(servo_ctrl, INPUT);
+  digitalWrite(servo_ctrl, HIGH);
+  
   servo_.detach();
 }
 
@@ -171,9 +177,6 @@ void Motor::velocity(float velocity)
   if (velocity < -1.0) {
     velocity = -1.0;
   }
-  
-  //Clip velocity to prevent high current cut-out
-  velocity *= 0.6;
   
   velocity_ = velocity;
   
@@ -190,6 +193,8 @@ void Motor::enable(bool enabled)
 {
   enabled_ = enabled;
   digitalWrite(enable_, enabled_);
+  digitalWrite(servo_ctrl, !enabled_);
+ 
 
   if (!enabled_)
   {

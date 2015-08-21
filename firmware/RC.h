@@ -42,17 +42,18 @@ class RC_Controller{
     float rudderVal();
     float rightVelocity();
     float leftVelocity();
-
+    float rightFan();
+    float leftFan();
     void update();
 
   private:
       //RC Controller Ouptut Values
-    int min_throttle = 1169;
-    int max_throttle = 1990;
+    int min_throttle = 1190;
+    int max_throttle = 1915;
 
-    int left_rudder = 1162;
-    int right_rudder = 1975;
-
+    int left_rudder = 1095;
+    int right_rudder = 1890;
+    
     int aux_low = 900;
     int aux_high = 2000;
     int aux_threshold = 1300;
