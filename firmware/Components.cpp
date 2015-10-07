@@ -90,12 +90,12 @@ void Swordfish::arm()
 //Sets 1500 to neutral (0 velocity) and 2000 to high (1.0 velocity)
 void Dynamite::arm()
 {
-    disable();
-    delay(1500);
+  disable();
+  delay(1500);
 
-    velocity(0.0);
-    enable();
-    delay(5000);
+  velocity(0.0);
+  enable();
+  delay(5000);
 }
 
 AnalogSensor::AnalogSensor(int channel)
@@ -201,7 +201,7 @@ char* ServoSensor::name()
 }
 
 PoweredSensor::PoweredSensor(int channel)
-: Sensor(channel)
+  : Sensor(channel)
 {
   pinMode(board::SENSOR[channel_].PWR_ENABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel_].PWR_ENABLE, HIGH);
@@ -213,7 +213,7 @@ char* PoweredSensor::name()
 }
 
 ES2::ES2(int channel)
-: Sensor(channel), recv_index_(0)
+  : Sensor(channel), recv_index_(0)
 {
   // Start up serial port
   SERIAL_PORTS[channel]->begin(1200);
@@ -259,17 +259,17 @@ void ES2::onSerial()
 
     if (recv_index_ > 6) // Only send data strings
     {
-      char output_str[DEFAULT_BUFFER_SIZE+3];
+      char output_str[DEFAULT_BUFFER_SIZE + 3];
       snprintf(output_str, DEFAULT_BUFFER_SIZE,
-        "{"
-         "\"s%u\":{"
-           "\"type\":\"es2\","
-           "\"data\":\"%s\""
-         "}"
-        "}",
-        channel_,
-        recv_buffer_
-      );
+               "{"
+               "\"s%u\":{"
+               "\"type\":\"es2\","
+               "\"data\":\"%s\""
+               "}"
+               "}",
+               channel_,
+               recv_buffer_
+              );
       send(output_str);
     }
 
@@ -279,7 +279,7 @@ void ES2::onSerial()
 }
 
 AtlasSensor::AtlasSensor(int channel)
-: Sensor(channel), recv_index_(0)
+  : Sensor(channel), recv_index_(0)
 {
   // Start up serial port.
   SERIAL_PORTS[channel]->begin(38400);
@@ -305,17 +305,17 @@ void AtlasSensor::onSerial()
   {
     recv_buffer_[recv_index_] = '\0';
 
-    char output_str[DEFAULT_BUFFER_SIZE+3];
+    char output_str[DEFAULT_BUFFER_SIZE + 3];
     snprintf(output_str, DEFAULT_BUFFER_SIZE,
-      "{"
-       "\"s%u\":{"
-         "\"type\":\"atlas\","
-         "\"data\":\"%s\""
-       "}"
-      "}",
-      channel_,
-      recv_buffer_
-    );
+             "{"
+             "\"s%u\":{"
+             "\"type\":\"atlas\","
+             "\"data\":\"%s\""
+             "}"
+             "}",
+             channel_,
+             recv_buffer_
+            );
     send(output_str);
 
     memset(recv_buffer_, 0, recv_index_);
@@ -324,7 +324,7 @@ void AtlasSensor::onSerial()
 }
 
 Hds5::Hds5(int channel)
-: Sensor(channel), recv_index_(0)
+  : Sensor(channel), recv_index_(0)
 {
   // Enable +12V output
   pinMode(board::SENSOR[channel].PWR_ENABLE, OUTPUT);
@@ -367,17 +367,17 @@ void Hds5::onSerial()
   {
     recv_buffer_[recv_index_] = '\0';
 
-    char output_str[DEFAULT_BUFFER_SIZE+3];
+    char output_str[DEFAULT_BUFFER_SIZE + 3];
     snprintf(output_str, DEFAULT_BUFFER_SIZE,
-      "{"
-       "\"s%u\":{"
-         "\"type\":\"hds5\","
-         "\"nmea\":\"%s\""
-       "}"
-      "}",
-      channel_,
-      recv_buffer_
-    );
+             "{"
+             "\"s%u\":{"
+             "\"type\":\"hds5\","
+             "\"nmea\":\"%s\""
+             "}"
+             "}",
+             channel_,
+             recv_buffer_
+            );
     send(output_str);
 
     memset(recv_buffer_, 0, recv_index_);
@@ -386,12 +386,12 @@ void Hds5::onSerial()
 }
 
 Winch::Winch(int channel, uint8_t address)
-: Sensor(channel)
-, roboclaw_(platypus::SERIAL_PORTS[channel], 10000)
-, address_(address)
-, desired_position_(0)
-, desired_velocity_(0)
-, desired_acceleration_(12000)
+  : Sensor(channel)
+  , roboclaw_(platypus::SERIAL_PORTS[channel], 10000)
+  , address_(address)
+  , desired_position_(0)
+  , desired_velocity_(0)
+  , desired_acceleration_(12000)
 {
   // Enable +12V output.
   pinMode(board::SENSOR[channel].PWR_ENABLE, OUTPUT);
@@ -469,12 +469,13 @@ uint32_t Winch::encoder(bool *valid)
 
 //Cosntruct RC "sensor" by calling RC_Controller
 RC::RC(int channel)
-: Sensor(channel),
-  RC_Controller(board::SENSOR[channel].GPIO[board::RX_NEG],
+  : Sensor(channel),
+    RC_Controller(board::SENSOR[channel].GPIO[board::RX_NEG],
                 board::SENSOR[channel].GPIO[board::TX_NEG],
-                board::SENSOR[channel].GPIO[board::RX_POS])
-{
-    // Disable RSxxx receiver
+                board::SENSOR[channel].GPIO[board::RX_POS],
+                board::SENSOR[channel].GPIO[board::TX_POS])
+ {
+  // Disable RSxxx receiver
   pinMode(board::SENSOR[channel].RX_DISABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel].RX_DISABLE, HIGH);
 
@@ -487,7 +488,7 @@ RC::RC(int channel)
 
 char * RC::name()
 {
-    return "RC_Controller";
+  return "RC_Controller";
 }
 
 

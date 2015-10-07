@@ -24,7 +24,7 @@ char url[] = "http://senseplatypus.com";
 
 //pRC Controller handle
 RC_Controller * pRC = NULL;
-
+bool configMode = false;
 // ADK USB Host
 USBHost Usb;
 ADK adk(&Usb, companyName, applicationName, accessoryName, versionNumber, url, serialNumber);
@@ -58,11 +58,34 @@ platypus::Led rgb_led;
 
 void enabledListener()
 {
-  
+  static long timer = millis(); 
   if(pRC != NULL)
   {
+    if(configMode)
+    {
+      pRC->configUpdate();
+      yield();
+      return;
+    }
     pRC->update();
-  
+       if (millis() - timer > 200)
+      { 
+        Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
+        Serial.print(pRC->throttleVal());
+        Serial.print(" ");
+        Serial.println(pRC->rudderVal());
+        Serial.print(" ");
+        Serial.print(pRC->leftVelocity());
+        Serial.print(" , ");
+        Serial.println(pRC->rightVelocity());
+        static float val = -1;
+        timer = millis();
+      }
+      
+     // Serial.print(pRC->leftVelocity());
+      //Serial.print(" , ");
+      //Serial.println(pRC->rightVelocity());
+      delay(200);
     if(pRC->isOverrideEnabled())
     {
       rgb_led.set(1, 1, 0);
@@ -78,28 +101,10 @@ void enabledListener()
       if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
       if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
 
-      static long timer = millis();
+     
       static platypus::ServoSensor * lServo = (platypus::ServoSensor *) platypus::sensors[0];
       static platypus::ServoSensor * rServo = (platypus::ServoSensor *) platypus::sensors[1];
-      /*if (millis() - timer > 200)
-      { 
-        pRC->update();
-        Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
-        Serial.print(pRC->throttleVal());
-        Serial.print(" ");
-        Serial.print(pRC->rudderVal());
-        Serial.print(" ");
-        Serial.print(lServo->position());
-        Serial.print(" ");
-        Serial.println(rServo->position());
-        //static float val = -1;
-        timer = millis();
-      }
-
-     // Serial.print(pRC->leftVelocity());
-      //Serial.print(" , ");
-      //Serial.println(pRC->rightVelocity());
-      delay(200);*/
+   
       platypus::motors[0]->velocity(pRC->leftVelocity());
       platypus::motors[1]->velocity(pRC->rightVelocity());
   /*    platypus::motors[0]->velocity(pRC->throttleVal());
@@ -267,7 +272,7 @@ void handleCommand(const char *buffer)
       }
       entry_object = platypus::motors[motor_idx];
     }
-    // If it is a motor, it must take the form 's1'.
+    // If it is a sensor, it must take the form 's1'.
     else if (entry_name[0] == 's')
     {
       size_t sensor_idx = entry_name[1] - '0';
@@ -338,6 +343,8 @@ void setup()
 
   // Initialize debugging serial console.
   Serial.begin(115200);
+  
+  Serial.println("Hello");
 
   // Start the system in the disconnected state
   system_state = DISCONNECTED;
@@ -349,6 +356,10 @@ void setup()
   platypus::sensors[2] = new platypus::RC(2);
   platypus::sensors[3] = new platypus::ES2(3);
    
+  Serial.println("Hello2");
+   
+  pRC = (platypus::RC*)platypus::sensors[2];
+  Scheduler.startLoop(enabledListener);  
 
   
   // Initialize motors
@@ -362,10 +373,14 @@ void setup()
   
   // Create secondary tasks for system.
   Scheduler.startLoop(motorUpdateLoop);
- // Scheduler.startLoop(serialConsoleLoop);
-
+  // Scheduler.startLoop(serialConsoleLoop);
+  
+   Serial.println("Hello3");
+  
   // Initialize Platypus library.
   platypus::init();
+  
+  Serial.println("Hello4");
   
   // Print header indicating that board successfully initialized
   Serial.println("------------------------------");
@@ -378,10 +393,9 @@ void setup()
   // Turn LED off
   // TODO: Investigate how this gets turned on in the first place
   rgb_led.set(0, 0, 0);
-    //Store RC controller 
+  //Store RC controller 
   
-   pRC = (platypus::RC*)platypus::sensors[2];
-   Scheduler.startLoop(enabledListener);  
+   
    
   delay(1000);
  
