@@ -283,6 +283,44 @@ void handleCommand(const char *buffer)
       }
       entry_object = platypus::sensors[sensor_idx];
     }
+    //If it is a configuration command it must begin with 'c'
+    else if (entry_name[0] == 'c')
+    {
+      if (entry_name[1] = 'c')
+      {
+        configMode = false;
+        return;
+      }
+      //If RC module is attached, send sensor updates
+      if(pRC != NULL)
+      {
+        pRC->configUpdate();
+      }
+      //No more commands in string
+      if (entry_name == '\0') return;
+
+      //Command to add sensor
+      if (entry_name[1] == 's')
+      {
+        int channel = entry_name[2] - '0';
+        switch(entry_name[3])
+        {
+          case 'r' : platypus::sensors[channel] = new platypus::RC(channel);
+                     pRC = (platypus:RC *)platypus::RC(channel);
+                     break;
+          case 'e' : platypus::sensors[channel] = new platypus::ES2(channel);
+                     break;
+          case 'h' : platypus::sensors[channel] = new platypus::HDS(channel);
+                     break;
+          default : break;           
+        }
+      }
+      //RC command received
+      else if (entry_name[1] == 'r')
+      {
+        
+      }
+    }
     // Report parse error if unable to identify this entry.
     else {
       reportError("Unknown command entry.", buffer);
@@ -352,13 +390,12 @@ void setup()
   // TODO: replace this with smart hooks.
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
-  platypus::sensors[1] = new platypus::ServoSensor(1);
+  platypus::sensors[1] = new platypus::ServoSensor(1); 
   platypus::sensors[2] = new platypus::RC(2);
   platypus::sensors[3] = new platypus::ES2(3);
    
   Serial.println("Hello2");
-   
-  pRC = (platypus::RC*)platypus::sensors[2];
+  pRC = (platypus::RC *)platypus::sensors[2];
   Scheduler.startLoop(enabledListener);  
 
   

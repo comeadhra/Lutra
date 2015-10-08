@@ -475,13 +475,6 @@ RC::RC(int channel)
                 board::SENSOR[channel].GPIO[board::RX_POS],
                 board::SENSOR[channel].GPIO[board::TX_POS])
  {
-  // Disable RSxxx receiver
-  pinMode(board::SENSOR[channel].RX_DISABLE, OUTPUT);
-  digitalWrite(board::SENSOR[channel].RX_DISABLE, HIGH);
-
-  // Disable TSxxx transmitter
-  pinMode(board::SENSOR[channel].TX_ENABLE, OUTPUT);
-  digitalWrite(board::SENSOR[channel].TX_ENABLE, LOW);
 
 
 }

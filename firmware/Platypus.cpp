@@ -256,6 +256,8 @@ void Motor::onLoop_(void *data)
 Sensor::Sensor(int channel) 
 : channel_(channel)
 {  
+  Serial.print("In sensor constructor on channel ");
+  Serial.println(channel);
   // Disable RSxxx receiver
   pinMode(board::SENSOR[channel].RX_DISABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel].RX_DISABLE, HIGH);
@@ -297,6 +299,9 @@ Sensor::Sensor(int channel)
   // Register serial event handler
   SerialHandler_t handler = {Sensor::onSerial_, this}; 
   SERIAL_HANDLERS[channel] = handler;
+
+   Serial.print("Finished sensor constructor on channel ");
+  Serial.println(channel);
 }
 
 Sensor::~Sensor()

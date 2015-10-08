@@ -4,7 +4,7 @@
 int THROTTLE_PIN = 3;
 int RUDDER_PIN = 2;
 int AUX_PIN = 20;
-int arming_PIN = 21;
+int ARMING_PIN = 21;
 
 //Throttle and Rudder Values as sent by RC
 volatile uint32_t throttle_pwm = 0;
@@ -69,7 +69,7 @@ void armedInterrupt(  )
 {
   static uint32_t armedStartTime;
 
-  if(digitalRead(arming_PIN))
+  if(digitalRead(ARMING_PIN))
   {
     armedStartTime = micros();
   }
@@ -90,15 +90,16 @@ void armedInterrupt(  )
  */
 RC_Controller::RC_Controller()
 {
-  pinMode(THROTTLE_PIN, INPUT); digitalWrite(THROTTLE_PIN, HIGH);
-  pinMode(RUDDER_PIN, INPUT);   digitalWrite(RUDDER_PIN, HIGH);
-  pinMode(AUX_PIN, INPUT);    digitalWrite(AUX_PIN, HIGH);
-  pinMode(arming_PIN, INPUT); digitalWrite(arming_PIN, HIGH);
+  Serial.println("Constructor Started");
+  pinMode(THROTTLE_PIN, INPUT); digitalWrite(THROTTLE_PIN, LOW);
+  pinMode(RUDDER_PIN, INPUT);   digitalWrite(RUDDER_PIN, LOW);
+  pinMode(AUX_PIN, INPUT);    digitalWrite(AUX_PIN, LOW);
+  pinMode(ARMING_PIN, INPUT); digitalWrite(ARMING_PIN, LOW);
   attachInterrupt(AUX_PIN, auxInterrupt, CHANGE);
   attachInterrupt(RUDDER_PIN, rudderInterrupt, CHANGE);
   attachInterrupt(THROTTLE_PIN, throttleInterrupt, CHANGE);
-  attachInterrupt(arming_PIN, armedInterrupt, CHANGE);
-
+  attachInterrupt(ARMING_PIN, armedInterrupt, CHANGE);
+  Serial.println("Constructor Completed");
 
 }
 
@@ -114,7 +115,7 @@ RC_Controller::RC_Controller(int aux_pin, int throttle_pin, int rudder_pin, int 
   AUX_PIN = aux_pin;
   THROTTLE_PIN = throttle_pin;
   RUDDER_PIN = rudder_pin;
-  arming_PIN = arming_pin;
+  ARMING_PIN = arming_pin;
   //Call default constructor to initialise pins
   RC_Controller();
 }
