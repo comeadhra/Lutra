@@ -70,6 +70,21 @@ void enabledListener()
     pRC->update();
        if (millis() - timer > 200)
       { 
+        static float vsum = 0;
+         static int count = 1;
+         
+         //float voltage = (analogRead(board::V_BATT) - 140)*0.05;
+         float voltage = analogRead(board::V_BATT);
+         vsum+=voltage;
+         count++;
+  Serial.print("Battery voltage = ");
+  Serial.print( voltage);
+  Serial.print(", average = ");
+  Serial.println(vsum/count);
+  Serial.print("Current0 = ");
+  Serial.print(platypus::motors[0]->current());
+  Serial.print(", Current1 = ");
+  Serial.println(platypus::motors[1]->current()); 
         Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
         Serial.print(pRC->throttleVal());
         Serial.print(" ");
@@ -78,6 +93,7 @@ void enabledListener()
         Serial.print(pRC->leftVelocity());
         Serial.print(" , ");
         Serial.println(pRC->rightVelocity());
+        
         static float val = -1;
         timer = millis();
       }
@@ -306,11 +322,11 @@ void handleCommand(const char *buffer)
         switch(entry_name[3])
         {
           case 'r' : platypus::sensors[channel] = new platypus::RC(channel);
-                     pRC = (platypus:RC *)platypus::RC(channel);
+                     pRC = (platypus::RC *)platypus::sensors[channel];
                      break;
           case 'e' : platypus::sensors[channel] = new platypus::ES2(channel);
                      break;
-          case 'h' : platypus::sensors[channel] = new platypus::HDS(channel);
+          case 'h' : platypus::sensors[channel] = new platypus::Hds5(channel);
                      break;
           default : break;           
         }

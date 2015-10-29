@@ -17,7 +17,8 @@ namespace platypus
 {  
   // Main library initialization function.
   void init();
-  
+  void powerUsageUpdate();
+  const float system_voltage = 12.4;
   class Configurable
   {
   public:     
@@ -72,6 +73,8 @@ namespace platypus
     int servo_ctrl;
     bool enabled_;
     float velocity_;
+    float csense_ = 0;
+    float vsense_;
     
   public:
     static void onLoop_(void *data);

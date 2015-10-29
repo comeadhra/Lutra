@@ -80,11 +80,26 @@ void platypusLoop_()
       platypus::Sensor::onLoop_(sensor);
     }
   }
+
+  //Run power consumption update task
+  powerUsageUpdate();
 }
 
 void platypus::init()
 {
   Scheduler.startLoop(platypusLoop_);
+  pinMode(board::V_BATT, INPUT);
+  digitalWrite(board::V_BATT, HIGH);
+  analogReadResolution(12);
+}
+
+//Send power consumption information over serial
+void powerUsageUpdate()
+{
+  //Battery voltage = AnalogReading*11*5.0V/1023
+  float voltage = analogRead(board::V_BATT)*0.05476;
+  Serial.print("Battery voltage = ");
+  Serial.println( voltage);
 }
 
 Led::Led()
@@ -156,7 +171,8 @@ Motor::Motor(int channel)
   digitalWrite(enable_, LOW);
   pinMode(servo_ctrl, OUTPUT);
   digitalWrite(servo_ctrl, HIGH);
-  
+  pinMode(board::MOTOR[channel_].CURRENT, INPUT);
+  digitalWrite(board::MOTOR[channel_].CURRENT, HIGH);
 }
 
 Motor::~Motor()
@@ -219,10 +235,22 @@ void Motor::disable()
 
 float Motor::current()
 {
-  float vsense = analogRead(board::MOTOR[channel_].CURRENT);
+  //Enable power current sense
+  digitalWrite(board::PWR_SELECT, LOW);
+  //Disable sensor current sense
+  digitalWrite(board::SENSOR_SELECT, HIGH);
+  
+ 
   //V sense is measured across a 330 Ohm resistor, I = V/R
-  //I sense is ~1/5000 of output current
-  return vsense*5000.0/330.0;
+  //I sense is ~1/6490 of output current
+  //0.0048 = 6490/(330*4095)
+  csense_ = ( (float)analogRead(board::MOTOR[channel_].CURRENT)*0.0048 );//(float)analogRead(board::MOTOR[channel_].CURRENT)*0.0048 - 0.8;
+  csense_ = csense_ - 0.8;
+  //csense_ =  (csense_ > 0.0) ? csense_ : 0.0;
+  
+  //Disable motor current sense
+  digitalWrite(board::PWR_SELECT, HIGH);
+  return csense_;
 }
 
 bool Motor::set(char *param, char *value)
@@ -337,3 +365,5 @@ void Sensor::onLoop_(void *data)
   Sensor *self = (Sensor*)data;
   self->loop();
 }
+
+

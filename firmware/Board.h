@@ -63,6 +63,9 @@ namespace board
 
   const int V_BATT = A3;
   const int CHG_CTRL = 51;
+
+  const int PWR_SELECT = 52;
+  const int SENSOR_SELECT = 53;
   
   const int HALF_DUPLEX01 = 38;
   const int HALF_DUPLEX23 = 39;
