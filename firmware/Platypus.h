@@ -73,8 +73,7 @@ namespace platypus
     int servo_ctrl;
     bool enabled_;
     float velocity_;
-    float csense_ = 0;
-    float vsense_;
+    float csense_ ;
     
   public:
     static void onLoop_(void *data);

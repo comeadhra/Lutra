@@ -96,10 +96,21 @@ void platypus::init()
 //Send power consumption information over serial
 void powerUsageUpdate()
 {
-  //Battery voltage = AnalogReading*11*5.0V/1023
+  const int DEFAULT_BUFFER_SIZE = 128;
+  //Battery voltage = AnalogReading*11*5.0V/4095
   float voltage = analogRead(board::V_BATT)*0.05476;
-  Serial.print("Battery voltage = ");
-  Serial.println( voltage);
+  char output_str[DEFAULT_BUFFER_SIZE + 3];
+  snprintf(output_str, DEFAULT_BUFFER_SIZE,
+               "{"
+               "\"s4\":{"
+               "\"type\":\"pwr\","
+               "\"data\":\"V: %f, C1: %f, C2: %f\""
+               "}"
+               "}",
+                 voltage, platypus::motors[0]->current(),
+                 platypus::motors[1]->current()
+              );
+  send(output_str);
 }
 
 Led::Led()
@@ -239,17 +250,21 @@ float Motor::current()
   digitalWrite(board::PWR_SELECT, LOW);
   //Disable sensor current sense
   digitalWrite(board::SENSOR_SELECT, HIGH);
-  
- 
+
   //V sense is measured across a 330 Ohm resistor, I = V/R
+  //166 represents tolerance correction 
+  int vsense = analogRead(board::MOTOR[channel_].CURRENT) - 166;
+
+  //Clamp to positve voltages
+  if(vsense < 0) vsense = 0;  
+
   //I sense is ~1/6490 of output current
   //0.0048 = 6490/(330*4095)
-  csense_ = ( (float)analogRead(board::MOTOR[channel_].CURRENT)*0.0048 );//(float)analogRead(board::MOTOR[channel_].CURRENT)*0.0048 - 0.8;
-  csense_ = csense_ - 0.8;
-  //csense_ =  (csense_ > 0.0) ? csense_ : 0.0;
+  csense_ = (float)vsense*0.0048;
   
   //Disable motor current sense
   digitalWrite(board::PWR_SELECT, HIGH);
+  
   return csense_;
 }
 
