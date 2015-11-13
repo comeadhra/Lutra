@@ -82,7 +82,7 @@ void platypusLoop_()
   }
 
   //Run power consumption update task
-  powerUsageUpdate();
+  //powerUsageUpdate();
 }
 
 void platypus::init()
@@ -104,7 +104,7 @@ void powerUsageUpdate()
                "{"
                "\"s4\":{"
                "\"type\":\"pwr\","
-               "\"data\":\"V: %f, C1: %f, C2: %f\""
+               "\"data\":\"%f %f %f\"" //V: %f, C1: %f, C2: %f
                "}"
                "}",
                  voltage, platypus::motors[0]->current(),

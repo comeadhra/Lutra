@@ -74,7 +74,7 @@ void enabledListener()
          static int count = 1;
          
          //float voltage = (analogRead(board::V_BATT) - 140)*0.05;
-         float voltage = analogRead(board::V_BATT);
+         /*float voltage = analogRead(board::V_BATT);
          vsum+=voltage;
          count++;
         Serial.print("Battery voltage = ");
@@ -84,7 +84,7 @@ void enabledListener()
         Serial.print("Current0 = ");
         Serial.print(platypus::motors[0]->current());
         Serial.print(", Current1 = ");
-        Serial.println(platypus::motors[1]->current()); 
+        Serial.println(platypus::motors[1]->current()); */
         Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
         Serial.print(pRC->throttleVal());
         Serial.print(" ");

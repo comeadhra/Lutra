@@ -155,6 +155,22 @@ namespace platypus
       
     
   };
+   class SerialSensor : public Sensor 
+  {
+  public:
+    SerialSensor(int channel);
+    ~SerialSensor();
+
+    char *name();
+    void loop();
+    void onSerial();
+
+    private:
+      char recv_buffer_[DEFAULT_BUFFER_SIZE];
+      unsigned int recv_index_;
+   
+  };
+
 }
 
 #endif //COMPONENTS_H
