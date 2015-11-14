@@ -12,13 +12,14 @@
  * Requires a null-terminated char* pointer.
  */
 extern void send(char *str);
-
+extern bool pcontrol_state;
 namespace platypus 
 {  
   // Main library initialization function.
   void init();
   void powerUsageUpdate();
   const float system_voltage = 12.4;
+  
   class Configurable
   {
   public:     

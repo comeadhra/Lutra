@@ -5,7 +5,7 @@ using namespace platypus;
 // TODO: Correct default initialization of these sensors.
 platypus::Motor *platypus::motors[board::NUM_MOTORS];
 platypus::Sensor *platypus::sensors[board::NUM_SENSORS];
-
+bool pcontrol_state = false;
 // TODO: Switch to using HardwareSerial.
 USARTClass *platypus::SERIAL_PORTS[4] = {
   NULL,

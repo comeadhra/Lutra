@@ -117,12 +117,17 @@ void enabledListener()
       if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
       if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
 
-     
-      static platypus::ServoSensor * lServo = (platypus::ServoSensor *) platypus::sensors[0];
-      static platypus::ServoSensor * rServo = (platypus::ServoSensor *) platypus::sensors[1];
-   
-      platypus::motors[0]->velocity(pRC->leftVelocity());
-      platypus::motors[1]->velocity(pRC->rightVelocity());
+      pcontrol_state = pRC->control_state;
+      if(pRC->control_state)
+      {
+         platypus::motors[0]->velocity(pRC->control_velocity);
+         platypus::motors[1]->velocity(pRC->control_velocity);
+      }
+      else
+      {
+         platypus::motors[0]->velocity(pRC->leftVelocity());
+         platypus::motors[1]->velocity(pRC->rightVelocity());
+      }
   /*    platypus::motors[0]->velocity(pRC->throttleVal());
       platypus::motors[1]->velocity(pRC->throttleVal());
       

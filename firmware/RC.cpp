@@ -14,6 +14,8 @@ volatile uint32_t arming_pwm = 0;
 
 volatile bool RCoverride = false;
 
+
+
 //auxiliary pin listener
 void auxInterrupt(  )
 {
@@ -396,11 +398,15 @@ void RC_Controller::update()
           //Throttle down and rudder left: Change ESC arm state
           if(arming_val > arming_threshold_h && arming_val < arming_high)
           {
-              armed = HIGH;
+              control_state = true;
+              //armed = true;
           }
           else if(arming_val < arming_threshold_l || arming_val > arming_high )
           {
-              armed = LOW;
+              control_state = false;
+              control_velocity += 0.1;
+              if(control_velocity > 1.0) control_velocity = 0.1;
+              //armed = false;
           }
           //Throttle down and rudder right: calibrate ESCs
           if(!armed && abs(throttle_val) < 0.05 &&  rudder_val > 0.95)

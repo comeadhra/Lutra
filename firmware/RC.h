@@ -65,6 +65,10 @@ class RC_Controller{
     void  update();
     void  configUpdate();
 
+    //Variables for fixed velocity testing
+    bool control_state = false;
+    float control_velocity = 0;
+
   private:
       //RC Controller Ouptut Values
     int min_throttle = 962;

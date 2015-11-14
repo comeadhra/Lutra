@@ -529,12 +529,15 @@ void SerialSensor::onSerial()
              "{"
              "\"s%u\":{"
              "\"type\":\"ser\","
-             "\"data\":\"%f %s\""
+             "\"data\":\"%f %s %f %f %d\""
              "}"
              "}",
-             analogRead(board::V_BATT)*0.05476, //11*5.0V/4095
              channel_,
-             recv_buffer_
+             analogRead(board::V_BATT)*0.05476, //11*5.0V/4095
+             recv_buffer_,
+             platypus::motors[0]->velocity(),
+             platypus::motors[1]->velocity(),
+             pcontrol_state 
             );
     send(output_str);
 
