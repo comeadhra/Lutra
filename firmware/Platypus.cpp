@@ -246,7 +246,7 @@ void Motor::disable()
 
 float Motor::current()
 {
-  //Enable power current sense
+  /*//Enable power current sense
   digitalWrite(board::PWR_SELECT, LOW);
   //Disable sensor current sense
   digitalWrite(board::SENSOR_SELECT, HIGH);
@@ -265,7 +265,8 @@ float Motor::current()
   //Disable motor current sense
   digitalWrite(board::PWR_SELECT, HIGH);
   
-  return csense_;
+  return csense_;*/
+  return 0;
 }
 
 bool Motor::set(char *param, char *value)

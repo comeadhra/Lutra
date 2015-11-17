@@ -13,6 +13,15 @@
 // TODO: remove me
 #include "Board.h"
 
+#include <malloc.h>
+#include <stdlib.h>
+#include <stdio.h>
+
+extern char _end;
+extern "C" char *sbrk(int i);
+char *ramstart=(char *)0x20070000;
+char *ramend=(char *)0x20088000;
+
 
 // ADK USB Host configuration 
 char applicationName[] = "Platypus Server"; // the app on Android
@@ -30,11 +39,11 @@ USBHost Usb;
 ADK adk(&Usb, companyName, applicationName, accessoryName, versionNumber, url, serialNumber);
 
 // Android send/receive buffers
-const size_t INPUT_BUFFER_SIZE = 512;
+const size_t INPUT_BUFFER_SIZE = 128;
 char input_buffer[INPUT_BUFFER_SIZE+1];
 char debug_buffer[INPUT_BUFFER_SIZE+1];
 
-const size_t OUTPUT_BUFFER_SIZE = 576;
+const size_t OUTPUT_BUFFER_SIZE = 128;
 char output_buffer[OUTPUT_BUFFER_SIZE+3];
 
 // System state enumeration
@@ -61,17 +70,17 @@ void enabledListener()
   static long timer = millis(); 
   if(pRC != NULL)
   {
-    if(configMode)
+    /*if(configMode)
     {
       pRC->configUpdate();
       yield();
       return;
-    }
+    }*/
     pRC->update();
-      /* if (millis() - timer > 200)
+       if (millis() - timer > 200)
       { 
-        static float vsum = 0;
-         static int count = 1;
+        //static float vsum = 0;
+        // static int count = 1;
          
          //float voltage = (analogRead(board::V_BATT) - 140)*0.05;
          /*float voltage = analogRead(board::V_BATT);
@@ -101,10 +110,17 @@ void enabledListener()
             Serial.print(pRC->leftVelocity());
             Serial.print(" , ");
             Serial.println(pRC->rightVelocity());
-        }        
-        static float val = -1;
+        }        */
+         char *heapend=sbrk(0);
+  register char * stack_ptr asm ("sp");
+  struct mallinfo mi=mallinfo();
+  printf("\nDynamic ram used: %d\n",mi.uordblks);
+  printf("Program static ram used %d\n",&_end - ramstart); 
+  printf("Stack ram used %d\n\n",ramend - stack_ptr); 
+  printf("My guess at free mem: %d\n",stack_ptr - heapend + mi.fordblks);
+        
         timer = millis();
-      }*/
+      }
       
      // Serial.print(pRC->leftVelocity());
       //Serial.print(" , ");
@@ -313,7 +329,7 @@ void handleCommand(const char *buffer)
       entry_object = platypus::sensors[sensor_idx];
     }
     //If it is a configuration command it must begin with 'c'
-    else if (entry_name[0] == 'c')
+    /*else if (entry_name[0] == 'c')
     {
       if (entry_name[1] = 'c')
       {
@@ -349,7 +365,7 @@ void handleCommand(const char *buffer)
       {
         
       }
-    }
+    }*/
     // Report parse error if unable to identify this entry.
     else {
       reportError("Unknown command entry.", buffer);
@@ -421,8 +437,8 @@ void setup()
   
   // TODO: replace this with smart hooks.
   // Initialize sensors
-  platypus::sensors[0] = new platypus::ServoSensor(0);
-  platypus::sensors[1] = new platypus::ServoSensor(1); 
+  platypus::sensors[0] = NULL;//new platypus::ServoSensor(0);
+  platypus::sensors[1] = NULL;//new platypus::ServoSensor(1); 
   platypus::sensors[2] = new platypus::RC(2);
   platypus::sensors[3] = new platypus::SerialSensor(3);
    
@@ -467,6 +483,8 @@ void setup()
    
    
   delay(1000);
+
+ 
  
 }
 
@@ -655,7 +673,7 @@ void motorUpdateLoop()
 
 /**
  * Periodically sends winch position updates.
- */
+ *//*
 void winchUpdateLoop()
 {
   // Wait for a fixed time period.
@@ -684,10 +702,10 @@ void winchUpdateLoop()
     } 
   }
 }
-
+*/
 /**
  * Reads from serial debugging console and attempts to execute commands.
- */
+ *//*
 void serialConsoleLoop()
 {
   // Index to last character in debug buffer.
@@ -715,4 +733,4 @@ void serialConsoleLoop()
     handleCommand(debug_buffer); 
   }
 }
-
+*/

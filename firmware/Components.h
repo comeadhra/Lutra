@@ -44,7 +44,7 @@ namespace platypus
     void arm();
   };
   
-  class AnalogSensor : public Sensor 
+/*  class AnalogSensor : public Sensor 
   {
   public:
     AnalogSensor(int channel);
@@ -145,7 +145,7 @@ namespace platypus
     int32_t desired_velocity_;
     uint32_t desired_acceleration_;
   };
-
+*/
   class RC : public Sensor, public RC_Controller
   {
     public:

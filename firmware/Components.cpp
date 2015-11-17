@@ -10,7 +10,7 @@ using namespace platypus;
 #define Ki 0x00008000
 #define Kd 0x00004000
 #define Qpps 44000
-*/
+*//*
 //Velocity PID coefficients
 #define Kp 2
 #define Ki 4
@@ -28,7 +28,7 @@ using namespace platypus;
 
 
 #define addr 0x80
-
+*/
 void VaporPro::arm()
 {
   disable();
@@ -97,7 +97,7 @@ void Dynamite::arm()
   enable();
   delay(5000);
 }
-
+/*
 AnalogSensor::AnalogSensor(int channel)
   : Sensor(channel), scale_(1.0f), offset_(0.0f) {}
 
@@ -478,7 +478,7 @@ RC::RC(int channel)
 
 
 }
-
+*/
 char * RC::name()
 {
   return "RC_Controller";
