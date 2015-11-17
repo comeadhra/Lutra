@@ -67,7 +67,7 @@ class RC_Controller{
 
     //Variables for fixed velocity testing
     bool control_state = false;
-    float control_velocity = 0;
+    float control_velocity = 0.1;
 
   private:
       //RC Controller Ouptut Values
@@ -94,7 +94,7 @@ class RC_Controller{
     
     bool  calibrate = false;
     bool  overrideEnabled = false;
-    bool  armed = false;
+    bool  armed = true;
     bool  motorUpdateBlocked = false;
     int velocityMode = 0;
     

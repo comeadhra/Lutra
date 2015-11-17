@@ -348,7 +348,8 @@ void RC_Controller::update()
         }
 
         overrideEnabled = false;
-        armed = false;
+        control_velocity = 0.1;
+       // armed = false;
 
       }
       //AUX pin is above threshold
@@ -403,16 +404,19 @@ void RC_Controller::update()
           }
           else if(arming_val < arming_threshold_l || arming_val > arming_high )
           {
-              control_state = false;
-              control_velocity += 0.1;
-              if(control_velocity > 1.0) control_velocity = 0.1;
+              if(control_state)
+              {
+                control_state = false;
+                control_velocity += 0.1;
+                if(control_velocity > 1.05) control_velocity = 0.1;
+              }
               //armed = false;
           }
           //Throttle down and rudder right: calibrate ESCs
           if(!armed && abs(throttle_val) < 0.05 &&  rudder_val > 0.95)
           {
             Serial.println("In calibrate");
-            calibrate = true;
+            calibrate = false;
           }
           else if(!armed)
           {

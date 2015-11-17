@@ -88,9 +88,9 @@ void platypusLoop_()
 void platypus::init()
 {
   Scheduler.startLoop(platypusLoop_);
-  pinMode(board::V_BATT, INPUT);
-  digitalWrite(board::V_BATT, HIGH);
-  analogReadResolution(12);
+  //pinMode(board::V_BATT, INPUT);
+  //digitalWrite(board::V_BATT, HIGH);
+  //analogReadResolution(12);
 }
 
 //Send power consumption information over serial
@@ -343,8 +343,8 @@ Sensor::Sensor(int channel)
   SerialHandler_t handler = {Sensor::onSerial_, this}; 
   SERIAL_HANDLERS[channel] = handler;
 
-   Serial.print("Finished sensor constructor on channel ");
-  Serial.println(channel);
+  // Serial.print("Finished sensor constructor on channel ");
+ // Serial.println(channel);
 }
 
 Sensor::~Sensor()
@@ -371,6 +371,7 @@ void Sensor::onSerial_(void *data)
 
 void Sensor::loop()
 {
+  delay(100);
   // Do nothing.
 }
 

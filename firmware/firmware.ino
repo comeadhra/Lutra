@@ -68,7 +68,7 @@ void enabledListener()
       return;
     }
     pRC->update();
-       if (millis() - timer > 200)
+      /* if (millis() - timer > 200)
       { 
         static float vsum = 0;
          static int count = 1;
@@ -85,18 +85,26 @@ void enabledListener()
         Serial.print(platypus::motors[0]->current());
         Serial.print(", Current1 = ");
         Serial.println(platypus::motors[1]->current()); */
-        Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
+       /* Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
         Serial.print(pRC->throttleVal());
         Serial.print(" ");
         Serial.println(pRC->rudderVal());
         Serial.print(" ");
-        Serial.print(pRC->leftVelocity());
-        Serial.print(" , ");
-        Serial.println(pRC->rightVelocity());
-        
+       
+        if(pRC->control_state)
+        {
+           Serial.print("Controlled Velocity: ");
+           Serial.println(pRC->control_velocity);
+        }
+        else
+        {
+            Serial.print(pRC->leftVelocity());
+            Serial.print(" , ");
+            Serial.println(pRC->rightVelocity());
+        }        
         static float val = -1;
         timer = millis();
-      }
+      }*/
       
      // Serial.print(pRC->leftVelocity());
       //Serial.print(" , ");
@@ -400,6 +408,9 @@ void setup()
   pinMode(board::PWR_KILL, OUTPUT);
   digitalWrite(board::PWR_KILL, HIGH);
 
+  //Set battery input pin
+  analogReadResolution(12);
+  pinMode(analogRead(board::V_BATT), INPUT);
   // Initialize debugging serial console.
   Serial.begin(115200);
   
@@ -413,7 +424,7 @@ void setup()
   platypus::sensors[0] = new platypus::ServoSensor(0);
   platypus::sensors[1] = new platypus::ServoSensor(1); 
   platypus::sensors[2] = new platypus::RC(2);
-  platypus::sensors[3] = new platypus::ES2(3);
+  platypus::sensors[3] = new platypus::SerialSensor(3);
    
   Serial.println("Hello2");
   pRC = (platypus::RC *)platypus::sensors[2];

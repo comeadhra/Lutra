@@ -159,10 +159,8 @@ namespace platypus
   {
   public:
     SerialSensor(int channel);
-    ~SerialSensor();
 
     char *name();
-    void loop();
     void onSerial();
 
     private:

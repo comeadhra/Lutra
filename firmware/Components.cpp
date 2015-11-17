@@ -487,24 +487,10 @@ char * RC::name()
 SerialSensor::SerialSensor(int channel)
   : Sensor(channel), recv_index_(0)
 {
-  // Enable RSxxx receiver
-  pinMode(board::SENSOR[channel].RX_DISABLE, OUTPUT);
-  digitalWrite(board::SENSOR[channel].RX_DISABLE, LOW);
-
-  // Enable RSxxx transmitter
-  pinMode(board::SENSOR[channel].TX_ENABLE, OUTPUT);
-  digitalWrite(board::SENSOR[channel].TX_ENABLE, HIGH);
-
-  // Enable RS485 termination resistor
-  pinMode(board::SENSOR[channel].RS485_TE, OUTPUT);
-  digitalWrite(board::SENSOR[channel].RS485_TE, HIGH);
-
-  // Select RS485 (deselect RS232)
-  pinMode(board::SENSOR[channel].RS485_232, OUTPUT);
-  digitalWrite(board::SENSOR[channel].RS485_232, HIGH);
-
+  
   // Start up serial port
-  SERIAL_PORTS[channel]->begin(9600);
+  SERIAL_PORTS[channel]->begin(1200);
+  
 }
 
 char* SerialSensor::name()
@@ -529,11 +515,12 @@ void SerialSensor::onSerial()
              "{"
              "\"s%u\":{"
              "\"type\":\"ser\","
-             "\"data\":\"%f %s %f %f %d\""
+             "\"data\":\"%.2f %s %.2f %.2f %d\""
+             //"\"data\":%s\""
              "}"
              "}",
              channel_,
-             analogRead(board::V_BATT)*0.05476, //11*5.0V/4095
+             analogRead(board::V_BATT)*0.00886, //11*5.0V/4095
              recv_buffer_,
              platypus::motors[0]->velocity(),
              platypus::motors[1]->velocity(),
