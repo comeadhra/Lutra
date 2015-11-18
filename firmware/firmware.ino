@@ -425,12 +425,11 @@ void setup()
   digitalWrite(board::PWR_KILL, HIGH);
 
   //Set battery input pin
-  analogReadResolution(12);
-  pinMode(analogRead(board::V_BATT), INPUT);
+  //analogReadResolution(12);
+  //pinMode(board::V_BATT, INPUT);
   // Initialize debugging serial console.
-  Serial.begin(9600);
+  Serial.begin(115200);
   
-  Serial.println("Hello");
 
   // Start the system in the disconnected state
   system_state = DISCONNECTED;
@@ -439,11 +438,11 @@ void setup()
   // Initialize sensors
   platypus::sensors[0] = NULL;//new platypus::ServoSensor(0);
   platypus::sensors[1] = NULL;//new platypus::ServoSensor(1); 
- // platypus::sensors[2] = new platypus::RC(2);
-  //platypus::sensors[3] = new platypus::SerialSensor(3);
+  platypus::sensors[2] = new platypus::RC(2);
+  platypus::sensors[3] = new platypus::SerialSensor(3);
    
   Serial.println("Hello2");
-  pRC = NULL;// (platypus::RC *)platypus::sensors[2];
+  pRC = (platypus::RC *)platypus::sensors[2];
   Scheduler.startLoop(enabledListener);  
 
   
