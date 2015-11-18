@@ -17,10 +17,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-extern char _end;
-extern "C" char *sbrk(int i);
-char *ramstart=(char *)0x20070000;
-char *ramend=(char *)0x20088000;
+//extern char _end;
+//extern "C" char *sbrk(int i);
+//char *ramstart=(char *)0x20070000;
+//char *ramend=(char *)0x20088000;
 
 
 // ADK USB Host configuration 
@@ -39,11 +39,11 @@ USBHost Usb;
 ADK adk(&Usb, companyName, applicationName, accessoryName, versionNumber, url, serialNumber);
 
 // Android send/receive buffers
-const size_t INPUT_BUFFER_SIZE = 128;
+const size_t INPUT_BUFFER_SIZE = 512;
 char input_buffer[INPUT_BUFFER_SIZE+1];
 char debug_buffer[INPUT_BUFFER_SIZE+1];
 
-const size_t OUTPUT_BUFFER_SIZE = 128;
+const size_t OUTPUT_BUFFER_SIZE = 576;
 char output_buffer[OUTPUT_BUFFER_SIZE+3];
 
 // System state enumeration
@@ -111,14 +111,14 @@ void enabledListener()
             Serial.print(" , ");
             Serial.println(pRC->rightVelocity());
         }        */
-         char *heapend=sbrk(0);
+ /*        char *heapend=sbrk(0);
   register char * stack_ptr asm ("sp");
   struct mallinfo mi=mallinfo();
   printf("\nDynamic ram used: %d\n",mi.uordblks);
   printf("Program static ram used %d\n",&_end - ramstart); 
   printf("Stack ram used %d\n\n",ramend - stack_ptr); 
   printf("My guess at free mem: %d\n",stack_ptr - heapend + mi.fordblks);
-        
+   */     
         timer = millis();
       }
       
@@ -428,7 +428,7 @@ void setup()
   analogReadResolution(12);
   pinMode(analogRead(board::V_BATT), INPUT);
   // Initialize debugging serial console.
-  Serial.begin(115200);
+  Serial.begin(9600);
   
   Serial.println("Hello");
 
@@ -439,11 +439,11 @@ void setup()
   // Initialize sensors
   platypus::sensors[0] = NULL;//new platypus::ServoSensor(0);
   platypus::sensors[1] = NULL;//new platypus::ServoSensor(1); 
-  platypus::sensors[2] = new platypus::RC(2);
-  platypus::sensors[3] = new platypus::SerialSensor(3);
+ // platypus::sensors[2] = new platypus::RC(2);
+  //platypus::sensors[3] = new platypus::SerialSensor(3);
    
   Serial.println("Hello2");
-  pRC = (platypus::RC *)platypus::sensors[2];
+  pRC = NULL;// (platypus::RC *)platypus::sensors[2];
   Scheduler.startLoop(enabledListener);  
 
   

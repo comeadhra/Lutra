@@ -180,10 +180,10 @@ Motor::Motor(int channel)
   servo_.attach(board::MOTOR[channel_].SERVO);
   pinMode(enable_, OUTPUT);
   digitalWrite(enable_, LOW);
-  pinMode(servo_ctrl, OUTPUT);
+  /*pinMode(servo_ctrl, OUTPUT);
   digitalWrite(servo_ctrl, HIGH);
   pinMode(board::MOTOR[channel_].CURRENT, INPUT);
-  digitalWrite(board::MOTOR[channel_].CURRENT, HIGH);
+  digitalWrite(board::MOTOR[channel_].CURRENT, HIGH);*/
 }
 
 Motor::~Motor()
