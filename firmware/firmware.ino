@@ -67,65 +67,11 @@ platypus::Led rgb_led;
 
 void enabledListener()
 {
-  static long timer = millis(); 
-  if(pRC != NULL)
+    if(pRC != NULL)
   {
-    /*if(configMode)
-    {
-      pRC->configUpdate();
-      yield();
-      return;
-    }*/
     pRC->update();
-       if (millis() - timer > 200)
-      { 
-        //static float vsum = 0;
-        // static int count = 1;
-         
-         //float voltage = (analogRead(board::V_BATT) - 140)*0.05;
-         /*float voltage = analogRead(board::V_BATT);
-         vsum+=voltage;
-         count++;
-        Serial.print("Battery voltage = ");
-        Serial.print( voltage);
-        Serial.print(", average = ");
-        Serial.println(vsum/count);
-        Serial.print("Current0 = ");
-        Serial.print(platypus::motors[0]->current());
-        Serial.print(", Current1 = ");
-        Serial.println(platypus::motors[1]->current()); */
-       /* Serial.print(pRC->isOverrideEnabled()?": On ":": Off ");
-        Serial.print(pRC->throttleVal());
-        Serial.print(" ");
-        Serial.println(pRC->rudderVal());
-        Serial.print(" ");
-       
-        if(pRC->control_state)
-        {
-           Serial.print("Controlled Velocity: ");
-           Serial.println(pRC->control_velocity);
-        }
-        else
-        {
-            Serial.print(pRC->leftVelocity());
-            Serial.print(" , ");
-            Serial.println(pRC->rightVelocity());
-        }        */
- /*        char *heapend=sbrk(0);
-  register char * stack_ptr asm ("sp");
-  struct mallinfo mi=mallinfo();
-  printf("\nDynamic ram used: %d\n",mi.uordblks);
-  printf("Program static ram used %d\n",&_end - ramstart); 
-  printf("Stack ram used %d\n\n",ramend - stack_ptr); 
-  printf("My guess at free mem: %d\n",stack_ptr - heapend + mi.fordblks);
-   */     
-        timer = millis();
-      }
-      
-     // Serial.print(pRC->leftVelocity());
-      //Serial.print(" , ");
-      //Serial.println(pRC->rightVelocity());
-      delay(200);
+    Serial.println("RC");
+    delay(200);
     if(pRC->isOverrideEnabled())
     {
       rgb_led.set(1, 1, 0);
@@ -152,12 +98,7 @@ void enabledListener()
          platypus::motors[0]->velocity(pRC->leftVelocity());
          platypus::motors[1]->velocity(pRC->rightVelocity());
       }
-  /*    platypus::motors[0]->velocity(pRC->throttleVal());
-      platypus::motors[1]->velocity(pRC->throttleVal());
-      
-      lServo->position( pRC->throttleVal() < 0.05 ? 0 : pRC->leftFan() );
-      rServo->position( pRC->throttleVal() < 0.05 ? 0 : pRC->rightFan() );
-    */}
+    }
   }
   yield();
 }
@@ -329,44 +270,7 @@ void handleCommand(const char *buffer)
       entry_object = platypus::sensors[sensor_idx];
     }
     //If it is a configuration command it must begin with 'c'
-    /*else if (entry_name[0] == 'c')
-    {
-      if (entry_name[1] = 'c')
-      {
-        configMode = false;
-        return;
-      }
-      //If RC module is attached, send sensor updates
-      if(pRC != NULL)
-      {
-        pRC->configUpdate();
-      }
-      //No more commands in string
-      if (entry_name == '\0') return;
-
-      //Command to add sensor
-      if (entry_name[1] == 's')
-      {
-        int channel = entry_name[2] - '0';
-        switch(entry_name[3])
-        {
-          case 'r' : platypus::sensors[channel] = new platypus::RC(channel);
-                     pRC = (platypus::RC *)platypus::sensors[channel];
-                     break;
-          case 'e' : platypus::sensors[channel] = new platypus::ES2(channel);
-                     break;
-          case 'h' : platypus::sensors[channel] = new platypus::Hds5(channel);
-                     break;
-          default : break;           
-        }
-      }
-      //RC command received
-      else if (entry_name[1] == 'r')
-      {
-        
-      }
-    }*/
-    // Report parse error if unable to identify this entry.
+       // Report parse error if unable to identify this entry.
     else {
       reportError("Unknown command entry.", buffer);
       return;
@@ -670,66 +574,3 @@ void motorUpdateLoop()
   }
 }
 
-/**
- * Periodically sends winch position updates.
- *//*
-void winchUpdateLoop()
-{
-  // Wait for a fixed time period.
-  delay(300);
-  
-  // Send status updates while connected to server.
-  if (system_state == RUNNING)
-  {  
-    // TODO: Remove this hack
-    // Send encoder status update over USB
-    bool valid = false;
-    long pos = ((platypus::Winch*)platypus::sensors[2])->encoder(&valid);
-    
-    if (valid)
-    {
-      snprintf(output_buffer, OUTPUT_BUFFER_SIZE,
-        "{"
-          "\"s2\":{"
-            "\"type\":\"winch\","
-            "\"depth\":%ld"
-          "}"
-        "}",
-        pos
-      );
-      send(output_buffer);
-    } 
-  }
-}
-*/
-/**
- * Reads from serial debugging console and attempts to execute commands.
- *//*
-void serialConsoleLoop()
-{
-  // Index to last character in debug buffer.
-  static size_t debug_buffer_idx = 0;
-  
-  // Wait until characters are received.
-  while (!Serial.available()) yield();
-
-  // Put the new character into the buffer.  
-  char c = Serial.read();
-  debug_buffer[debug_buffer_idx++] = c;
-
-  // If it is the end of a line, or we are out of space, parse the buffer.
-  if (debug_buffer_idx >= INPUT_BUFFER_SIZE || c == '\n' || c == '\r') 
-  {
-    // Properly null-terminate the buffer.
-    debug_buffer[debug_buffer_idx] = '\0';
-    debug_buffer_idx = 0;
-    
-    // Echo incoming message on debug console.
-    Serial.print("## ");
-    Serial.println(debug_buffer);
-    
-    // Attempt to parse command.
-    handleCommand(debug_buffer); 
-  }
-}
-*/

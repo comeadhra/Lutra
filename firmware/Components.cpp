@@ -4,87 +4,6 @@ using namespace platypus;
 
 #define WAIT_FOR_CONDITION(condition, timeout_ms) for (unsigned int j = 0; j < (timeout_ms) && !(condition); ++j) delay(1);
 
-// TODO: move these somewhere reasonable
-// Default gains for the Roboclaw.
-/*#define Kp 0x00010000
-#define Ki 0x00008000
-#define Kd 0x00004000
-#define Qpps 44000
-*//*
-//Velocity PID coefficients
-#define Kp 2
-#define Ki 4
-#define Kd 0
-#define Qpps 44000 //3600
-
-//Position PID coefficients
-#define PosKp 2500
-#define PosKi 0
-#define PosKd 20000
-#define KiMax 0
-#define DeadZone 5 //10
-#define Min 50
-#define Max 1950
-
-
-#define addr 0x80
-*/
-void VaporPro::arm()
-{
-  disable();
-  delay(500);
-  enable();
-
-  velocity(1.0);
-  delay(5500);
-
-  velocity(-1.0);
-  delay(3500);
-
-  velocity(0.0);
-  delay(8500);
-}
-
-void HobbyKingBoat::arm()
-{
-  disable();
-  delay(1000);
-
-  velocity(1.0);
-  enable();
-  delay(3000);
-
-  velocity(0.0);
-  delay(3000);
-}
-
-void Seaking::arm()
-{
-  disable();
-  delay(500);
-  disable();
-  delay(500);
-
-  velocity(1.0);
-  enable();
-  delay(3000);
-
-  velocity(0.0);
-  delay(2000);
-}
-
-void Swordfish::arm()
-{
-  disable();
-  delay(500);
-
-  velocity(1.0);
-  enable();
-  delay(5000);
-
-  velocity(0.0);
-  delay(3000);
-}
 
 //Default Dynamite arming routine
 //Sets 1500 to neutral (0 velocity) and 2000 to high (1.0 velocity)
@@ -466,7 +385,7 @@ uint32_t Winch::encoder(bool *valid)
   uint32_t enc1 = roboclaw_.ReadEncM1(addr, NULL, valid);
   return enc1;
 }
-
+*/
 //Cosntruct RC "sensor" by calling RC_Controller
 RC::RC(int channel)
   : Sensor(channel),
@@ -478,7 +397,7 @@ RC::RC(int channel)
 
 
 }
-*/
+
 char * RC::name()
 {
   return "RC_Controller";
