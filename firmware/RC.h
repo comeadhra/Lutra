@@ -102,6 +102,7 @@ class RC_Controller{
     float rudder_val = 0;
     int   aux_val;
     int arming_val;
+    long controlled_timer;
 
 
 };

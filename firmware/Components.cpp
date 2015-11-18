@@ -466,7 +466,7 @@ uint32_t Winch::encoder(bool *valid)
   uint32_t enc1 = roboclaw_.ReadEncM1(addr, NULL, valid);
   return enc1;
 }
-
+*/
 //Cosntruct RC "sensor" by calling RC_Controller
 RC::RC(int channel)
   : Sensor(channel),
@@ -478,7 +478,7 @@ RC::RC(int channel)
 
 
 }
-*/
+
 char * RC::name()
 {
   return "RC_Controller";

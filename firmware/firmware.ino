@@ -77,6 +77,7 @@ void enabledListener()
       return;
     }*/
     pRC->update();
+    pcontrol_state = pRC->control_state;
        if (millis() - timer > 200)
       { 
         //static float vsum = 0;
@@ -141,18 +142,10 @@ void enabledListener()
       if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
       if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
 
-      pcontrol_state = pRC->control_state;
-      if(pRC->control_state)
-      {
-         platypus::motors[0]->velocity(pRC->control_velocity);
-         platypus::motors[1]->velocity(pRC->control_velocity);
-      }
-      else
-      {
-         platypus::motors[0]->velocity(pRC->leftVelocity());
-         platypus::motors[1]->velocity(pRC->rightVelocity());
-      }
-  /*    platypus::motors[0]->velocity(pRC->throttleVal());
+    
+     platypus::motors[0]->velocity(pRC->leftVelocity());
+     platypus::motors[1]->velocity(pRC->rightVelocity());
+        /*    platypus::motors[0]->velocity(pRC->throttleVal());
       platypus::motors[1]->velocity(pRC->throttleVal());
       
       lServo->position( pRC->throttleVal() < 0.05 ? 0 : pRC->leftFan() );
@@ -425,8 +418,8 @@ void setup()
   digitalWrite(board::PWR_KILL, HIGH);
 
   //Set battery input pin
-  //analogReadResolution(12);
-  //pinMode(board::V_BATT, INPUT);
+  analogReadResolution(12);
+  pinMode(board::V_BATT, INPUT);
   // Initialize debugging serial console.
   Serial.begin(115200);
   

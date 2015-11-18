@@ -218,59 +218,65 @@ int RC_Controller::getPWMArming(rc_pwm_t type)
 //Returns the velocity for the right motor
 float RC_Controller::rightVelocity()
 {
-   if (velocityMode == 1)
-  {
-    
-  }
-  else
-  {
-      //Turning right -> reduce left motor speed
-    if (rudder_val > 0 && throttle_val > 0)
+    float l_throttle_val = throttle_val;
+    if(control_state){     l_throttle_val = control_velocity;}
+      
+     if (velocityMode == 1)
     {
-      return throttle_val;
-    }
-    else if(throttle_val > 0)
-    {
-      return throttle_val*(1+rudder_val);
-    }
-    else if(rudder_val < 0)
-    {
-      return throttle_val;
+      
     }
     else
     {
-      return throttle_val*(1-rudder_val);
+        //Turning right -> reduce left motor speed
+      if (rudder_val > 0 && l_throttle_val > 0)
+      {
+        return l_throttle_val;
+      }
+      else if(l_throttle_val > 0)
+      {
+        return l_throttle_val*(1+rudder_val);
+      }
+      else if(rudder_val < 0)
+      {
+        return l_throttle_val;
+      }
+      else
+      {
+        return l_throttle_val*(1-rudder_val);
+      }
     }
-  }
 }
 
 //Returns the velocity for the right motor
 float RC_Controller::leftVelocity()
 {
-  if (velocityMode == 1)
-  {
-    
-  }
-  else
-  {
-    //Turning right -> reduce left motor speed
-    if (rudder_val > 0 && throttle_val > 0)
+    float l_throttle_val = throttle_val;
+    if(control_state){     l_throttle_val = control_velocity;}
+  
+    if (velocityMode == 1)
     {
-      return throttle_val*(1-rudder_val);
-    }
-    else if(throttle_val > 0)
-    {
-      return throttle_val;
-    }
-    else if(rudder_val < 0)
-    {
-      return throttle_val*(1+rudder_val);
+      
     }
     else
     {
-      return throttle_val;
+      //Turning right -> reduce left motor speed
+      if (rudder_val > 0 && l_throttle_val > 0)
+      {
+        return l_throttle_val*(1-rudder_val);
+      }
+      else if(l_throttle_val > 0)
+      {
+        return l_throttle_val;
+      }
+      else if(rudder_val < 0)
+      {
+        return l_throttle_val*(1+rudder_val);
+      }
+      else
+      {
+        return l_throttle_val;
+      }
     }
-  }
 }
 
 float RC_Controller::rightFan()
@@ -400,6 +406,8 @@ void RC_Controller::update()
           if(arming_val > arming_threshold_h && arming_val < arming_high)
           {
               control_state = true;
+              //Record start time for controlled state
+              controlled_timer = millis();
               //armed = true;
           }
           else if(arming_val < arming_threshold_l || arming_val > arming_high )
@@ -407,7 +415,20 @@ void RC_Controller::update()
               if(control_state)
               {
                 control_state = false;
-                control_velocity += 0.1;
+                //Send duration of controlled state
+                long controlled_time = millis() - controlled_timer;
+                char output_str[50 + 3];
+                snprintf(output_str, 50,
+                         "{"
+                         "\"s3\":{"
+                         "\"type\":\"ct\","
+                         "\"data\":\"%d\""
+                         "}"
+                         "}",
+                         controlled_time
+                        );
+               send(output_str);
+               control_velocity += 0.1;
                 if(control_velocity > 1.05) control_velocity = 0.1;
               }
               //armed = false;
