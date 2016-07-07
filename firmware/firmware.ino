@@ -3,7 +3,7 @@
 #include <adk.h>
 
 // Arduino headers used in Platypus.h
-// (informs the IDE to link these libraries)
+ (informs the IDE to link these libraries)
 #include <Servo.h>
 #include <Scheduler.h>
 
@@ -32,6 +32,10 @@ char debug_buffer[INPUT_BUFFER_SIZE+1];
 
 const size_t OUTPUT_BUFFER_SIZE = 576;
 char output_buffer[OUTPUT_BUFFER_SIZE+3];
+
+//odroid connection flags
+boolean odroid_connected = false;
+boolean odroid_cmd_rxd = false;
 
 // System state enumeration
 enum SystemState
@@ -251,7 +255,7 @@ void loop()
   Usb.Task();
   
   // Report system as shutdown if not connected to USB.
-  if (!adk.isReady())
+  if (!adk.isReady() && !odroid_connected)
   {
     unsigned long current_time = millis();
     // If not connected to USB, we are 'DISCONNECTED'.
@@ -282,7 +286,7 @@ void loop()
   // Attempt to read command from USB.
   adk.read(&bytes_read, INPUT_BUFFER_SIZE, (uint8_t*)input_buffer);
   unsigned long current_command_time = millis();
-  if (bytes_read <= 0) 
+  if (bytes_read <= 0 && !odroid_cmd_rxd)  
   {
     // If we haven't received a response in a long time, maybe 
     // we are 'CONNECTED' but the server is not running.
@@ -301,6 +305,9 @@ void loop()
   } 
   else 
   {
+    
+    // reset odroid flag
+    odroid_cmd_rxd = false; 
     // If we received a command, the server must be 'RUNNING'.
     if (system_state == CONNECTED) 
     {
@@ -490,7 +497,10 @@ void serialConsoleLoop()
     debug_buffer_idx = 0;
 
     //Serial.println(debug_buffer);
-    if (strcmp(debug_buffer, "DOc") == 0){
+    if (strcmp(debug_buffer, "ARM") == 0)        {
+      odroid_connected = true;
+      odroid_cmd_rxd   = true; 
+    } else if (strcmp(debug_buffer, "DOc") == 0){
       platypus::sensors[1]->calibrate(1);
     } else if (strcmp(debug_buffer, "DOc0") == 0){
       platypus::sensors[1]->calibrate(0);
@@ -501,6 +511,8 @@ void serialConsoleLoop()
     } else if (strcmp(debug_buffer, "PHch") == 0){
       platypus::sensors[2]->calibrate(1);
     }
+    
+    if (odroid_connected)  odroid_cmd_rxd = true; 
     // Attempt to parse command.
     handleCommand(debug_buffer); 
   }
