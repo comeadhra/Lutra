@@ -34,8 +34,9 @@ const size_t OUTPUT_BUFFER_SIZE = 576;
 char output_buffer[OUTPUT_BUFFER_SIZE+3];
 
 //odroid connection flags
-boolean odroid_connected = false;
-boolean odroid_cmd_rxd = false;
+boolean odroid_connected  = false;
+boolean odroid_cmd_rxd    = false;
+boolean odroid_error      = false;
 
 // System state enumeration
 enum SystemState
@@ -45,7 +46,9 @@ enum SystemState
   /** There is an ADK USB device detected, but it is unresponsive. */
   CONNECTED,
   /** There is a Platypus Server currently communicating. */
-  RUNNING  
+  RUNNING,
+  /** There is an error in the Server **/
+  ERR  
 };
 SystemState system_state = DISCONNECTED;
 
@@ -148,6 +151,7 @@ void handleCommand(char *buffer)
 
       target_object = platypus::sensors[object_index];
       break;
+    //odroid command received
     case 'o':
       {
       odroid_connected = true;
@@ -155,19 +159,22 @@ void handleCommand(char *buffer)
       JsonObject::iterator paramIt=params.begin();
       if ( strncmp( paramIt->key, "a", 1) == 0)
       {
-        
+        odroid_error = false;
       }
       else if ( strncmp(paramIt->key, "econn", 5) == 0)
       {
         rgb_led.set((millis() >> 8) & 0, 0, 1);
+        odroid_error = true;
       }
       else if ( strncmp(paramIt->key, "egps", 4) == 0)
       {
         rgb_led.set((millis() >> 8) & 1, 1, 0);
+        odroid_error = true;
       }
       else if ( strncmp(paramIt->key, "eahrs", 5) == 0)
       {
         rgb_led.set((millis() >> 8) & 0, 1, 1);
+        odroid_error = true;
       }
       break;
       }  
@@ -288,6 +295,14 @@ void loop()
   
   // Do USB bookkeeping.
   Usb.Task();
+
+  //Force system into error state
+  if(odroid_error)
+  {
+    system_state = ERR;
+    yield();
+    return;
+  }
   
   // Report system as shutdown if not connected to USB.
   if (!adk.isReady() && !odroid_connected)
@@ -341,8 +356,6 @@ void loop()
   else 
   {
     
-    // reset odroid flag
-    odroid_cmd_rxd = false; 
     // If we received a command, the server must be 'RUNNING'.
     if (system_state == CONNECTED) 
     {
@@ -353,9 +366,15 @@ void loop()
     // Update the timestamp of last received command.
     last_command_time = current_command_time;
     last_usb_connection_time = current_command_time;
+    
+    if (odroid_cmd_rxd)
+    {
+      // reset odroid flag
+      odroid_cmd_rxd = false;
+      return; 
+    }
   }
-  
-  // Properly null-terminate the buffer.
+  //null-terminate the buffer.
   input_buffer[bytes_read] = '\0';
   
   // Copy incoming message to debug console.
@@ -411,6 +430,9 @@ void motorUpdateLoop()
     // Solid green
     rgb_led.set(0, 1, 0);
     break;
+  case ERR:
+    break;
+    
   }
   
   // Handle the motors appropriately for each system state.
@@ -547,9 +569,10 @@ void serialConsoleLoop()
       platypus::sensors[2]->calibrate(1);
     }
     
-    if (odroid_connected)  odroid_cmd_rxd = true; 
     // Attempt to parse command.
     handleCommand(debug_buffer); 
+
+    if (odroid_connected && !odroid_error)  odroid_cmd_rxd = true; 
   }
 }
 
