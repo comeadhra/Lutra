@@ -3,7 +3,7 @@
 #include <adk.h>
 
 // Arduino headers used in Platypus.h
- (informs the IDE to link these libraries)
+//(informs the IDE to link these libraries)
 #include <Servo.h>
 #include <Scheduler.h>
 
@@ -148,7 +148,29 @@ void handleCommand(char *buffer)
 
       target_object = platypus::sensors[object_index];
       break;
-
+    case 'o':
+      {
+      odroid_connected = true;
+      JsonObject& params = it->value;
+      JsonObject::iterator paramIt=params.begin();
+      if ( strncmp( paramIt->key, "a", 1) == 0)
+      {
+        
+      }
+      else if ( strncmp(paramIt->key, "econn", 5) == 0)
+      {
+        rgb_led.set((millis() >> 8) & 0, 0, 1);
+      }
+      else if ( strncmp(paramIt->key, "egps", 4) == 0)
+      {
+        rgb_led.set((millis() >> 8) & 1, 1, 0);
+      }
+      else if ( strncmp(paramIt->key, "eahrs", 5) == 0)
+      {
+        rgb_led.set((millis() >> 8) & 0, 1, 1);
+      }
+      break;
+      }  
     default: // Unrecognized target
       reportError("Unknown command target.", buffer);
       return;
