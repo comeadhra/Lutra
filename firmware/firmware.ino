@@ -224,19 +224,7 @@ void setup()
   // Start the system in the disconnected state
   system_state = DISCONNECTED;
 
-  //*******************************************************************
-  // Hack to set Adafruit GPS Settings
-  Serial1.begin(9600);
-  Serial1.setTimeout(250);
-  // Set output to RMC only
-  Serial1.println("$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29");
-  // Set output rate to 5Hz
-  Serial1.println("$PMTK220,200*2C");
-  // Set fix rate to 5Hz
-  Serial1.println("$PMTK300,200,0,0,0,0*2F");
-  delay(1000);
-  //*******************************************************************
-  
+    
   // TODO: replace this with smart hooks.
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
@@ -244,6 +232,8 @@ void setup()
   platypus::sensors[2] = new platypus::AHRS(2);
   platypus::sensors[3] = new platypus::ES2(3);
 
+  //delay(1000);
+  //Serial1.println("$PMTK220,100*2F");
   // Initialize motors
   platypus::motors[0] = new platypus::Dynamite(0);
   platypus::motors[1] = new platypus::Dynamite(1);

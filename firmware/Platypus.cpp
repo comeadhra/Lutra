@@ -314,6 +314,7 @@ void Motor::onLoop_(void *data)
 Sensor::Sensor(int channel) 
 : channel_(channel)
 {  
+   
   // Disable RSxxx receiver
   pinMode(board::SENSOR[channel].RX_DISABLE, OUTPUT);
   digitalWrite(board::SENSOR[channel].RX_DISABLE, HIGH);
