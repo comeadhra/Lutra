@@ -154,29 +154,35 @@ void handleCommand(char *buffer)
     //odroid command received
     case 'o':
       {
+      Serial.println("Received odroid command");
       odroid_connected = true;
       JsonObject& params = it->value;
       JsonObject::iterator paramIt=params.begin();
-      if ( strncmp( paramIt->key, "a", 1) == 0)
+      const char * param_name = paramIt->key;
+      const char * param_value = paramIt->value;
+      //Serial.println(String("Key is ") + param_name);
+      //delay(10000);
+      if ( strncmp( param_name, "a", 1) == 0)
       {
+        //Serial.println("No error");
         odroid_error = false;
       }
-      else if ( strncmp(paramIt->key, "econn", 5) == 0)
+      else if ( strncmp(param_name, "econn", 5) == 0)
       {
         rgb_led.set((millis() >> 8) & 0, 0, 1);
         odroid_error = true;
       }
-      else if ( strncmp(paramIt->key, "egps", 4) == 0)
+      else if ( strncmp(param_name, "egps", 4) == 0)
       {
         rgb_led.set((millis() >> 8) & 1, 1, 0);
         odroid_error = true;
       }
-      else if ( strncmp(paramIt->key, "eahrs", 5) == 0)
+      else if ( strncmp(param_name, "eahrs", 5) == 0)
       {
         rgb_led.set((millis() >> 8) & 0, 1, 1);
         odroid_error = true;
       }
-      break;
+      return;
       }  
     default: // Unrecognized target
       reportError("Unknown command target.", buffer);
@@ -289,6 +295,7 @@ void loop()
   //Force system into error state
   if(odroid_error)
   {
+    Serial.println("STATE: ERR");
     system_state = ERR;
     yield();
     return;
