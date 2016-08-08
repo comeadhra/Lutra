@@ -188,6 +188,7 @@ void Motor::velocity(float velocity)
   }
 
   velocity_ = velocity;
+  
 
   float command = (velocity * 500) + 1500;
   servo_.writeMicroseconds(command);
@@ -239,6 +240,17 @@ float Motor::current()
   return vsense*5000.0/330.0;
 }
 
+void Motor::setv( float v )
+{
+  if (v > 1.0) {
+    v = 1.0;
+  }
+  else if (v < -1.0) {
+    v = -1.0;
+  }
+
+  desiredVelocity_ = v;
+}
 bool Motor::set(const char *param, const char *value)
 {
   // Set motor velocity.

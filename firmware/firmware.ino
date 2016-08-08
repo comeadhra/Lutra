@@ -21,6 +21,9 @@ char versionNumber[] = "3.0";
 char serialNumber[] = "3";
 char url[] = "http://senseplatypus.com";
 
+//pRC Controller handle
+RC_Controller * pRC = NULL;
+
 // ADK USB Host
 USBHost Usb;
 ADK adk(&Usb, companyName, applicationName, accessoryName, versionNumber, url, serialNumber);
@@ -56,6 +59,48 @@ const size_t CONNECTION_TIMEOUT_MS = 500;
 // Define the systems on this board
 // TODO: move this board.h?
 platypus::Led rgb_led;
+
+void enabledListener()
+{
+    if(pRC != NULL)
+  {
+    pRC->update();
+    
+    delay(200);
+    if(pRC->isOverrideEnabled())
+    {
+      rgb_led.set(1, 1, 0);
+      if(pRC->isCalibrateEnabled())
+      {
+        //Wait until motor update loop has been blocked to prevent
+        //errors in motor arming
+        while(!pRC->isMotorUpdateBlocked())
+          rgb_led.set(1,0,1);
+        platypus::motors[0]->arm();
+        platypus::motors[1]->arm();
+      }
+      if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
+      if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
+
+      platypus::motors[0]->setv( pRC->leftVelocity() );
+      platypus::motors[1]->setv( pRC->rightVelocity() );
+      
+      //Serial.println(String("LV: ") + pRC->leftVelocity() + ", " + platypus::motors[0]->velocity());
+      //Serial.println(String("RV: ") + pRC->rightVelocity()+ ", " + platypus::motors[1]->velocity());
+      
+   
+      
+    }
+    /*
+    Serial.println(String("arming:   ") + pRC->arming_val);
+    Serial.println(String("aux:      ") + pRC->aux_val);
+    Serial.println(String("rudder:   ") + pRC->rudder_val);
+    Serial.println(String("throttle: ") + pRC->throttle_val);
+    */
+  }
+  yield();
+}
+
 
 /**
  * Wrapper for ADK send command that copies data to debug port.
@@ -124,6 +169,12 @@ void handleCommand(char *buffer)
     // Determine target object
     switch (key[0]){
     case 'm': // Motor command
+      
+      //pRC is attached and the override is set
+      //ignore any motor commands sent by server
+      if( pRC != NULL && pRC->isOverrideEnabled() )
+        return;
+    
       object_index = key[1] - '0';
 
       if (object_index >= board::NUM_MOTORS){
@@ -195,8 +246,13 @@ void setup()
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
   platypus::sensors[1] = new platypus::GY26Compass(1);
-  platypus::sensors[2] = new platypus::GY26Compass(2);
+  platypus::sensors[2] = new platypus::RC(2);
   platypus::sensors[3] = new platypus::GY26Compass(3);
+
+  
+  pRC = (platypus::RC *)platypus::sensors[2];
+  Scheduler.startLoop(enabledListener);  
+
   
   // Initialize motors
   platypus::motors[0] = new platypus::Dynamite(0);
@@ -351,6 +407,17 @@ void batteryUpdateLoop()
  */
 void motorUpdateLoop()
 {
+  //Break loop is RC is set to override control
+  if(pRC != NULL)
+  {
+    while(pRC->isOverrideEnabled())
+    { 
+      pRC->setMotorUpdateBlocked(true); 
+      yield();
+    }
+    pRC->setMotorUpdateBlocked(false);
+  }
+  
   // Wait for a fixed time period.
   delay(100);
   
@@ -390,6 +457,7 @@ void motorUpdateLoop()
     // Decay all motors exponentially towards zero speed.
     for (size_t motor_idx = 0; motor_idx < board::NUM_MOTORS; ++motor_idx) 
     {
+      Serial.println("Setting v");
       platypus::Motor* motor = platypus::motors[motor_idx];
       motor->set("v", "0.0");
     }

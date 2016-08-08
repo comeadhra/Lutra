@@ -908,3 +908,20 @@ uint32_t Winch::encoder(bool *valid)
   return enc1;
 }
 
+//Cosntruct RC "sensor" by calling RC_Controller
+RC::RC(int channel)
+  : Sensor(channel),
+    RC_Controller(board::SENSOR[channel].GPIO[board::RX_NEG],
+                board::SENSOR[channel].GPIO[board::TX_NEG],
+                board::SENSOR[channel].GPIO[board::RX_POS],
+                board::SENSOR[channel].GPIO[board::TX_POS])
+ {
+
+
+}
+
+char * RC::name()
+{
+  return "RC_Controller";
+}
+

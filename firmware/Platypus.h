@@ -52,6 +52,7 @@ namespace platypus
 
     virtual void arm() = 0;
     virtual bool set(const char *param, const char *value);
+    void setv(float v);
     virtual void loop();
     
     void velocity(float velocity);
