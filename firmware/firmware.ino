@@ -91,12 +91,12 @@ void enabledListener()
    
       
     }
-    /*
+    
     Serial.println(String("arming:   ") + pRC->arming_val);
     Serial.println(String("aux:      ") + pRC->aux_val);
     Serial.println(String("rudder:   ") + pRC->rudder_val);
     Serial.println(String("throttle: ") + pRC->throttle_val);
-    */
+    //*/
   }
   yield();
 }
