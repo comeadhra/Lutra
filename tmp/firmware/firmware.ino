@@ -3,7 +3,7 @@
 #include <adk.h>
 
 // Arduino headers used in Platypus.h
-// (informs the IDE to link these libraries)
+//(informs the IDE to link these libraries)
 #include <Servo.h>
 #include <Scheduler.h>
 
@@ -21,9 +21,6 @@ char versionNumber[] = "3.0";
 char serialNumber[] = "3";
 char url[] = "http://senseplatypus.com";
 
-//pRC Controller handle
-RC_Controller * pRC = NULL;
-
 // ADK USB Host
 USBHost Usb;
 ADK adk(&Usb, companyName, applicationName, accessoryName, versionNumber, url, serialNumber);
@@ -36,6 +33,11 @@ char debug_buffer[INPUT_BUFFER_SIZE+1];
 const size_t OUTPUT_BUFFER_SIZE = 576;
 char output_buffer[OUTPUT_BUFFER_SIZE+3];
 
+//odroid connection flags
+boolean odroid_connected  = false;
+boolean odroid_cmd_rxd    = false;
+boolean odroid_error      = false;
+
 // System state enumeration
 enum SystemState
 {
@@ -44,7 +46,9 @@ enum SystemState
   /** There is an ADK USB device detected, but it is unresponsive. */
   CONNECTED,
   /** There is a Platypus Server currently communicating. */
-  RUNNING  
+  RUNNING,
+  /** There is an error in the Server **/
+  ERR  
 };
 SystemState system_state = DISCONNECTED;
 
@@ -59,39 +63,6 @@ const size_t CONNECTION_TIMEOUT_MS = 500;
 // Define the systems on this board
 // TODO: move this board.h?
 platypus::Led rgb_led;
-
-void enabledListener()
-{
-    if(pRC != NULL)
-  {
-    pRC->update();
-    
-    delay(200);
-    if(pRC->isOverrideEnabled())
-    {
-      rgb_led.set(1, 1, 0);
-      if(!platypus::motors[0]->enabled()) platypus::motors[0]->enable();
-      if(!platypus::motors[1]->enabled()) platypus::motors[1]->enable();
-
-      platypus::motors[0]->setv( pRC->leftVelocity() );
-      platypus::motors[1]->setv( pRC->rightVelocity() );
-      
-      //Serial.println(String("LV: ") + pRC->leftVelocity() + ", " + platypus::motors[0]->velocity());
-      //Serial.println(String("RV: ") + pRC->rightVelocity()+ ", " + platypus::motors[1]->velocity());
-      
-   
-      
-    }
-    
-    Serial.println(String("arming:   ") + pRC->armingVal());
-    Serial.println(String("aux:      ") + pRC->auxVal());
-    Serial.println(String("rudder:   ") + pRC->rudderVal());
-    Serial.println(String("throttle: ") + pRC->throttleVal());
-    //*/
-  }
-  yield();
-}
-
 
 /**
  * Wrapper for ADK send command that copies data to debug port.
@@ -160,12 +131,6 @@ void handleCommand(char *buffer)
     // Determine target object
     switch (key[0]){
     case 'm': // Motor command
-      
-      //pRC is attached and the override is set
-      //ignore any motor commands sent by server
-      if( pRC != NULL && pRC->isOverrideEnabled() )
-        return;
-    
       object_index = key[1] - '0';
 
       if (object_index >= board::NUM_MOTORS){
@@ -186,7 +151,39 @@ void handleCommand(char *buffer)
 
       target_object = platypus::sensors[object_index];
       break;
-
+    //odroid command received
+    case 'o':
+      {
+      Serial.println("Received odroid command");
+      odroid_connected = true;
+      JsonObject& params = it->value;
+      JsonObject::iterator paramIt=params.begin();
+      const char * param_name = paramIt->key;
+      const char * param_value = paramIt->value;
+      //Serial.println(String("Key is ") + param_name);
+      //delay(10000);
+      if ( strncmp( param_name, "a", 1) == 0)
+      {
+        //Serial.println("No error");
+        odroid_error = false;
+      }
+      else if ( strncmp(param_name, "econn", 5) == 0)
+      {
+        rgb_led.set((millis() >> 8) & 0, 0, 1);
+        odroid_error = true;
+      }
+      else if ( strncmp(param_name, "egps", 4) == 0)
+      {
+        rgb_led.set((millis() >> 8) & 1, 1, 0);
+        odroid_error = true;
+      }
+      else if ( strncmp(param_name, "eahrs", 5) == 0)
+      {
+        rgb_led.set((millis() >> 8) & 0, 1, 1);
+        odroid_error = true;
+      }
+      return;
+      }  
     default: // Unrecognized target
       reportError("Unknown command target.", buffer);
       return;
@@ -232,19 +229,17 @@ void setup()
 
   // Start the system in the disconnected state
   system_state = DISCONNECTED;
-  
+
+    
   // TODO: replace this with smart hooks.
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
-  platypus::sensors[1] = new platypus::GY26Compass(1);
-  platypus::sensors[2] = new platypus::RC(2);
-  platypus::sensors[3] = new platypus::GY26Compass(3);
+  platypus::sensors[1] = new platypus::AtlasDO(1);
+  platypus::sensors[2] = new platypus::AtlasPH(2);
+  platypus::sensors[3] = new platypus::GrabSampler(3);
 
-  
-  pRC = (platypus::RC *)platypus::sensors[2];
-  Scheduler.startLoop(enabledListener);  
-
-  
+  //delay(1000);
+  //Serial1.println("$PMTK220,100*2F");
   // Initialize motors
   platypus::motors[0] = new platypus::Dynamite(0);
   platypus::motors[1] = new platypus::Dynamite(1);
@@ -270,13 +265,13 @@ void setup()
   platypus::init();
   
   // Print header indicating that board successfully initialized
-  /*Serial.println(F("------------------------------"));
+  Serial.println(F("------------------------------"));
   Serial.println(companyName);
   Serial.println(url);
   Serial.println(accessoryName);
   Serial.println(versionNumber);
   Serial.println(F("------------------------------"));
-  */
+  
   // Turn LED off
   // TODO: Investigate how this gets turned on in the first place
   rgb_led.set(0, 0, 0);
@@ -296,9 +291,18 @@ void loop()
   
   // Do USB bookkeeping.
   Usb.Task();
+
+  //Force system into error state
+  if(odroid_error)
+  {
+    Serial.println("STATE: ERR");
+    system_state = ERR;
+    yield();
+    return;
+  }
   
   // Report system as shutdown if not connected to USB.
-  if (!adk.isReady())
+  if (!adk.isReady() && !odroid_connected)
   {
     unsigned long current_time = millis();
     // If not connected to USB, we are 'DISCONNECTED'.
@@ -329,7 +333,7 @@ void loop()
   // Attempt to read command from USB.
   adk.read(&bytes_read, INPUT_BUFFER_SIZE, (uint8_t*)input_buffer);
   unsigned long current_command_time = millis();
-  if (bytes_read <= 0) 
+  if (bytes_read <= 0 && !odroid_cmd_rxd)  
   {
     // If we haven't received a response in a long time, maybe 
     // we are 'CONNECTED' but the server is not running.
@@ -348,6 +352,7 @@ void loop()
   } 
   else 
   {
+    
     // If we received a command, the server must be 'RUNNING'.
     if (system_state == CONNECTED) 
     {
@@ -358,9 +363,15 @@ void loop()
     // Update the timestamp of last received command.
     last_command_time = current_command_time;
     last_usb_connection_time = current_command_time;
+    
+    if (odroid_cmd_rxd)
+    {
+      // reset odroid flag
+      odroid_cmd_rxd = false;
+      return; 
+    }
   }
-  
-  // Properly null-terminate the buffer.
+  //null-terminate the buffer.
   input_buffer[bytes_read] = '\0';
   
   // Copy incoming message to debug console.
@@ -398,17 +409,6 @@ void batteryUpdateLoop()
  */
 void motorUpdateLoop()
 {
-  //Break loop is RC is set to override control
-  if(pRC != NULL)
-  {
-    while(pRC->isOverrideEnabled())
-    { 
-      pRC->setMotorUpdateBlocked(true); 
-      yield();
-    }
-    pRC->setMotorUpdateBlocked(false);
-  }
-  
   // Wait for a fixed time period.
   delay(100);
   
@@ -427,6 +427,9 @@ void motorUpdateLoop()
     // Solid green
     rgb_led.set(0, 1, 0);
     break;
+  case ERR:
+    break;
+    
   }
   
   // Handle the motors appropriately for each system state.
@@ -448,7 +451,6 @@ void motorUpdateLoop()
     // Decay all motors exponentially towards zero speed.
     for (size_t motor_idx = 0; motor_idx < board::NUM_MOTORS; ++motor_idx) 
     {
-      Serial.println("Setting v");
       platypus::Motor* motor = platypus::motors[motor_idx];
       motor->set("v", "0.0");
     }
@@ -549,7 +551,10 @@ void serialConsoleLoop()
     debug_buffer_idx = 0;
 
     //Serial.println(debug_buffer);
-    if (strcmp(debug_buffer, "DOc") == 0){
+    if (strcmp(debug_buffer, "ARM") == 0)        {
+      odroid_connected = true;
+      odroid_cmd_rxd   = true; 
+    } else if (strcmp(debug_buffer, "DOc") == 0){
       platypus::sensors[1]->calibrate(1);
     } else if (strcmp(debug_buffer, "DOc0") == 0){
       platypus::sensors[1]->calibrate(0);
@@ -560,8 +565,11 @@ void serialConsoleLoop()
     } else if (strcmp(debug_buffer, "PHch") == 0){
       platypus::sensors[2]->calibrate(1);
     }
+    
     // Attempt to parse command.
     handleCommand(debug_buffer); 
+
+    if (odroid_connected && !odroid_error)  odroid_cmd_rxd = true; 
   }
 }
 
