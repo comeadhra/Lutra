@@ -49,12 +49,12 @@ class RC_Controller{
 
   private:
       //RC Controller Ouptut Values
-    int min_throttle = 987;
-    int max_throttle = 1965;
+    int min_throttle = 1000;
+    int max_throttle = 1975;
     int mid_throttle = 1471;
 
-    int left_rudder = 896;
-    int right_rudder = 2065;
+    int left_rudder = 1000;
+    int right_rudder = 2000;
     
     int aux_low = 980*0.95;
     int aux_high = 1966*1.05;
