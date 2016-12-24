@@ -234,9 +234,9 @@ void setup()
   // TODO: replace this with smart hooks.
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
-  platypus::sensors[1] = new platypus::AdafruitGPS(1);
+  platypus::sensors[1] = new platypus::AtlasPH(1);
   platypus::sensors[2] = new platypus::AHRS(2);
-  platypus::sensors[3] = new platypus::ES2(3);
+  platypus::sensors[3] = new platypus::GrabSampler(3);
 
   //delay(1000);
   //Serial1.println("$PMTK220,100*2F");

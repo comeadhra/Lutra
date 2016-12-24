@@ -1205,3 +1205,95 @@ uint32_t Winch::encoder(bool *valid)
   return enc1;
 }
 
+GrabSampler::GrabSampler(int channel):Sensor(channel), PoweredSensor(channel, true), channel_(channel)
+{
+//  init_time = millis();
+
+pinMode(board::SENSOR[channel_].GPIO[board::RX_POS], OUTPUT);
+pinMode(board::SENSOR[channel_].GPIO[board::TX_POS], OUTPUT);
+pinMode(board::SENSOR[channel_].GPIO[board::RX_NEG], OUTPUT);
+pinMode(board::SENSOR[channel_].GPIO[board::TX_NEG], OUTPUT);
+disable(0);
+disable(2);
+
+}
+
+/*void GrabSampler::loop()
+{
+  if( millis() - init_time > wait_time && !isActive)
+  {
+    //start_time  = millis();
+    //isActive = true;
+    powerOn();
+    pinMode(board::SENSOR[channel_].GPIO[board::RX_POS], HIGH);
+    pinMode(board::SENSOR[channel_].GPIO[board::RX_NEG], HIGH);
+    pinMode(board::SENSOR[channel_].GPIO[board::TX_POS], HIGH);
+    pinMode(board::SENSOR[channel_].GPIO[board::TX_NEG], HIGH);
+  }
+  else if( isActive && millis() - start_time > pump_time )
+  {
+      powerOff();
+      pinMode(board::SENSOR[channel_].GPIO[board::RX_POS], LOW);
+      pinMode(board::SENSOR[channel_].GPIO[board::RX_NEG], LOW);
+      pinMode(board::SENSOR[channel_].GPIO[board::TX_POS], LOW);
+      pinMode(board::SENSOR[channel_].GPIO[board::TX_NEG], LOW);
+      start_time = millis()*100;
+   }
+    
+  
+}*/
+char * GrabSampler::name()
+{
+  return "GrabSampler";
+  
+}
+
+void GrabSampler::enable(int pump_num)
+{   
+ 
+  switch(pump_num)
+  {
+    case 0: case 1: digitalWrite(board::SENSOR[channel_].GPIO[board::RX_POS], HIGH); analogWrite(board::SENSOR[channel_].GPIO[board::RX_NEG], pump_num == 0 ? 255 : 0); break; 
+    case 2: case 3: digitalWrite(board::SENSOR[channel_].GPIO[board::TX_POS], HIGH); analogWrite(board::SENSOR[channel_].GPIO[board::TX_NEG], pump_num == 2 ? 255 : 0); break;
+    default: break;
+  };
+}
+
+
+void GrabSampler::disable(int pump_num)
+{
+  digitalWrite(board::SENSOR[channel_].GPIO[pump_num < 2 ? board::RX_POS: board::TX_POS], LOW);
+}
+
+bool GrabSampler::set(const char* param, const char* value)
+{
+  // Set winch position
+  if (!strncmp("e", param, 2))
+  {
+    int pump_num = atol(value);
+    active[pump_num] = true;
+    enable(pump_num);
+    powerOn();
+    return true;
+  }
+  else if (!strncmp("d", param, 2))
+  {
+    int pump_num = atol(value);
+    active[pump_num] = false;
+    disable(pump_num);
+
+    //Check if any pump is still enabled
+    for(int i = 0; i < 4; i++)  if (active[i]) return true;
+    
+    powerOff();
+    return true;
+  }
+  // Return false for unknown command.
+  else
+  {
+    return false;
+  }
+}
+
+
+
