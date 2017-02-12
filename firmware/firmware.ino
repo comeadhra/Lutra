@@ -33,11 +33,6 @@ char debug_buffer[INPUT_BUFFER_SIZE+1];
 const size_t OUTPUT_BUFFER_SIZE = 576;
 char output_buffer[OUTPUT_BUFFER_SIZE+3];
 
-//odroid connection flags
-boolean odroid_connected  = false;
-boolean odroid_cmd_rxd    = false;
-boolean odroid_error      = false;
-
 // System state enumeration
 enum SystemState
 {
@@ -151,39 +146,7 @@ void handleCommand(char *buffer)
 
       target_object = platypus::sensors[object_index];
       break;
-    //odroid command received
-    case 'o':
-      {
-      Serial.println("Received odroid command");
-      odroid_connected = true;
-      JsonObject& params = it->value;
-      JsonObject::iterator paramIt=params.begin();
-      const char * param_name = paramIt->key;
-      const char * param_value = paramIt->value;
-      //Serial.println(String("Key is ") + param_name);
-      //delay(10000);
-      if ( strncmp( param_name, "a", 1) == 0)
-      {
-        //Serial.println("No error");
-        odroid_error = false;
-      }
-      else if ( strncmp(param_name, "econn", 5) == 0)
-      {
-        rgb_led.set((millis() >> 8) & 0, 0, 1);
-        odroid_error = true;
-      }
-      else if ( strncmp(param_name, "egps", 4) == 0)
-      {
-        rgb_led.set((millis() >> 8) & 1, 1, 0);
-        odroid_error = true;
-      }
-      else if ( strncmp(param_name, "eahrs", 5) == 0)
-      {
-        rgb_led.set((millis() >> 8) & 0, 1, 1);
-        odroid_error = true;
-      }
-      return;
-      }  
+      
     default: // Unrecognized target
       reportError("Unknown command target.", buffer);
       return;
@@ -235,8 +198,8 @@ void setup()
   // Initialize sensors
   platypus::sensors[0] = new platypus::ServoSensor(0);
   platypus::sensors[1] = new platypus::AtlasPH(1);
-  platypus::sensors[2] = new platypus::AHRS(2);
-  platypus::sensors[3] = new platypus::GrabSampler(3);
+  platypus::sensors[2] = new platypus::JSONPassThrough(2);
+  platypus::sensors[3] = new platypus::AHRS(3);
 
   //delay(1000);
   //Serial1.println("$PMTK220,100*2F");
@@ -292,17 +255,8 @@ void loop()
   // Do USB bookkeeping.
   Usb.Task();
 
-  //Force system into error state
-  if(odroid_error)
-  {
-    Serial.println("STATE: ERR");
-    system_state = ERR;
-    yield();
-    return;
-  }
-  
   // Report system as shutdown if not connected to USB.
-  if (!adk.isReady() && !odroid_connected)
+  if (!adk.isReady())
   {
     unsigned long current_time = millis();
     // If not connected to USB, we are 'DISCONNECTED'.
@@ -333,7 +287,7 @@ void loop()
   // Attempt to read command from USB.
   adk.read(&bytes_read, INPUT_BUFFER_SIZE, (uint8_t*)input_buffer);
   unsigned long current_command_time = millis();
-  if (bytes_read <= 0 && !odroid_cmd_rxd)  
+  if (bytes_read <= 0)  
   {
     // If we haven't received a response in a long time, maybe 
     // we are 'CONNECTED' but the server is not running.
@@ -363,13 +317,6 @@ void loop()
     // Update the timestamp of last received command.
     last_command_time = current_command_time;
     last_usb_connection_time = current_command_time;
-    
-    if (odroid_cmd_rxd)
-    {
-      // reset odroid flag
-      odroid_cmd_rxd = false;
-      return; 
-    }
   }
   //null-terminate the buffer.
   input_buffer[bytes_read] = '\0';
@@ -551,10 +498,7 @@ void serialConsoleLoop()
     debug_buffer_idx = 0;
 
     //Serial.println(debug_buffer);
-    if (strcmp(debug_buffer, "ARM") == 0)        {
-      odroid_connected = true;
-      odroid_cmd_rxd   = true; 
-    } else if (strcmp(debug_buffer, "DOc") == 0){
+    if (strcmp(debug_buffer, "DOc") == 0){
       platypus::sensors[1]->calibrate(1);
     } else if (strcmp(debug_buffer, "DOc0") == 0){
       platypus::sensors[1]->calibrate(0);
@@ -569,7 +513,6 @@ void serialConsoleLoop()
     // Attempt to parse command.
     handleCommand(debug_buffer); 
 
-    if (odroid_connected && !odroid_error)  odroid_cmd_rxd = true; 
   }
 }
 

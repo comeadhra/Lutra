@@ -1204,96 +1204,63 @@ uint32_t Winch::encoder(bool *valid)
   uint32_t enc1 = roboclaw_.ReadEncM1(addr, NULL, valid);
   return enc1;
 }
-
-GrabSampler::GrabSampler(int channel):Sensor(channel), PoweredSensor(channel, true), channel_(channel)
+JSONPassThrough::JSONPassThrough(int channel):Sensor(channel),SerialSensor(channel, 115200, RS232)
 {
-//  init_time = millis();
-
-pinMode(board::SENSOR[channel_].GPIO[board::RX_POS], OUTPUT);
-pinMode(board::SENSOR[channel_].GPIO[board::TX_POS], OUTPUT);
-pinMode(board::SENSOR[channel_].GPIO[board::RX_NEG], OUTPUT);
-pinMode(board::SENSOR[channel_].GPIO[board::TX_NEG], OUTPUT);
-disable(0);
-disable(2);
-
-}
-
-/*void GrabSampler::loop()
-{
-  if( millis() - init_time > wait_time && !isActive)
-  {
-    //start_time  = millis();
-    //isActive = true;
-    powerOn();
-    pinMode(board::SENSOR[channel_].GPIO[board::RX_POS], HIGH);
-    pinMode(board::SENSOR[channel_].GPIO[board::RX_NEG], HIGH);
-    pinMode(board::SENSOR[channel_].GPIO[board::TX_POS], HIGH);
-    pinMode(board::SENSOR[channel_].GPIO[board::TX_NEG], HIGH);
-  }
-  else if( isActive && millis() - start_time > pump_time )
-  {
-      powerOff();
-      pinMode(board::SENSOR[channel_].GPIO[board::RX_POS], LOW);
-      pinMode(board::SENSOR[channel_].GPIO[board::RX_NEG], LOW);
-      pinMode(board::SENSOR[channel_].GPIO[board::TX_POS], LOW);
-      pinMode(board::SENSOR[channel_].GPIO[board::TX_NEG], LOW);
-      start_time = millis()*100;
-   }
-    
-  
-}*/
-char * GrabSampler::name()
-{
-  return "GrabSampler";
   
 }
 
-void GrabSampler::enable(int pump_num)
-{   
- 
-  switch(pump_num)
-  {
-    case 0: case 1: digitalWrite(board::SENSOR[channel_].GPIO[board::RX_POS], HIGH); analogWrite(board::SENSOR[channel_].GPIO[board::RX_NEG], pump_num == 0 ? 255 : 0); break; 
-    case 2: case 3: digitalWrite(board::SENSOR[channel_].GPIO[board::TX_POS], HIGH); analogWrite(board::SENSOR[channel_].GPIO[board::TX_NEG], pump_num == 2 ? 255 : 0); break;
-    default: break;
-  };
-}
+void JSONPassThrough::onSerial() {
+  char c = SERIAL_PORTS[channel_]->read();
 
-
-void GrabSampler::disable(int pump_num)
-{
-  digitalWrite(board::SENSOR[channel_].GPIO[pump_num < 2 ? board::RX_POS: board::TX_POS], LOW);
-}
-
-bool GrabSampler::set(const char* param, const char* value)
-{
-  // Set winch position
-  if (!strncmp("e", param, 2))
-  {
-    int pump_num = atol(value);
-    active[pump_num] = true;
-    enable(pump_num);
-    powerOn();
-    return true;
+  // Ignore null and tab characters
+  if (c == '\0' || c == '\t') {
+    return;
   }
-  else if (!strncmp("d", param, 2))
+  if (c != '\r' && c != '\n' && recv_index_ < DEFAULT_BUFFER_SIZE)
   {
-    int pump_num = atol(value);
-    active[pump_num] = false;
-    disable(pump_num);
+    recv_buffer_[recv_index_] = c;
+    ++recv_index_;
+  }
+  else if (recv_index_ > 0)
+  {
+    recv_buffer_[recv_index_] = '\0';
 
-    //Check if any pump is still enabled
-    for(int i = 0; i < 4; i++)  if (active[i]) return true;
+    //Serial.print("Raw Sensor Input: ");
+    //Serial.println(recv_buffer_);
     
-    powerOff();
-    return true;
-  }
-  // Return false for unknown command.
-  else
-  {
-    return false;
-  }
+    send(recv_buffer_);
+    memset(recv_buffer_, 0, recv_index_);
+    recv_index_ = 0;
+  }       
 }
+
+bool JSONPassThrough::set(const char* param, const char* value){
+    
+    char output_str[DEFAULT_BUFFER_SIZE + 3];
+    snprintf(output_str, DEFAULT_BUFFER_SIZE,
+             "{"
+             "\"s%u\":{"
+             "\"%s\":"
+             "%s"
+             "}"
+             "}",
+             channel_,
+             param,
+             value
+            );
+    SERIAL_PORTS[channel_]->println(output_str); 
+    Serial.println(output_str); 
+}
+
+
+char * JSONPassThrough::name() {
+  return "json_pass_through";
+}
+void JSONPassThrough::loop(){
+}
+
+
+
 
 
 

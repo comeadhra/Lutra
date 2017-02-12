@@ -292,22 +292,16 @@ namespace platypus
     int32_t desired_velocity_;
     uint32_t desired_acceleration_;
   };
-
-  class GrabSampler : public PoweredSensor
+  class JSONPassThrough : public SerialSensor
   {
-    public:
-      GrabSampler(int channel);
-      virtual char * name();
-      void enable(int pump_num);
-      void disable(int pump_num);
-      bool set(const char* param, const char* value);
-
-    private:
-      int channel_;
-      bool active[4] = {0,0,0,0};
-      Servo pwm[2];
+  public:
+    JSONPassThrough(int channel);
+    bool set(const char * param, const char * value);
+    virtual char * name();
+    void loop();
+    void onSerial();
   };
- 
+
 }
 
 #endif //COMPONENTS_H
