@@ -1204,14 +1204,15 @@ uint32_t Winch::encoder(bool *valid)
   uint32_t enc1 = roboclaw_.ReadEncM1(addr, NULL, valid);
   return enc1;
 }
-JSONPassThrough::JSONPassThrough(int channel):Sensor(channel),SerialSensor(channel, 115200, RS232)
+JSONPassThrough::JSONPassThrough(int channel):Sensor(channel),SerialSensor(channel, 9600, DIRECT)
 {
   
 }
 
 void JSONPassThrough::onSerial() {
+  
   char c = SERIAL_PORTS[channel_]->read();
-
+  
   // Ignore null and tab characters
   if (c == '\0' || c == '\t') {
     return;
@@ -1224,9 +1225,7 @@ void JSONPassThrough::onSerial() {
   else if (recv_index_ > 0)
   {
     recv_buffer_[recv_index_] = '\0';
-
-    //Serial.print("Raw Sensor Input: ");
-    //Serial.println(recv_buffer_);
+    //Serial.print(String("Raw Sensor Input:") + recv_buffer_);
     
     send(recv_buffer_);
     memset(recv_buffer_, 0, recv_index_);
@@ -1248,8 +1247,7 @@ bool JSONPassThrough::set(const char* param, const char* value){
              param,
              value
             );
-    SERIAL_PORTS[channel_]->println(output_str); 
-    Serial.println(output_str); 
+    SERIAL_PORTS[channel_]->println(output_str);  
 }
 
 
